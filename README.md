@@ -3,6 +3,11 @@ Light weight python tool for mining, classification and analysis of gene duplica
 
 <img width="3933" height="2583" alt="Dupylicate_github_schematic" src="https://github.com/user-attachments/assets/cbae189d-19d2-45a3-b75f-fb0dbc5c4a25" />
 
+## Workflow
+<img width="4638" height="5484" alt="Dupylicate_workflow_diagram" src="https://github.com/user-attachments/assets/a818ed9f-530f-4b54-bf4a-8cc0fa5f2ce7" />
+
+## Gene duplicates types output by DupyliCate
+<img width="3120" height="1851" alt="Gene_duplicates_types" src="https://github.com/user-attachments/assets/ca081760-2e30-4eea-bfb3-94877b443d6f" />
 
 ```
 Usage:
