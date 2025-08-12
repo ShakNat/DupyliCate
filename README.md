@@ -63,7 +63,7 @@ DupyliCate also facilitates optional gene expression analysis of gene duplicates
 
 <div align="justify">
 	
-(10) If expression data is available for the sample organism(s), expression analysis of gene duplicates can also be peformed with the script. (**Step 10**)
+(10) If expression data is available for the sample organism(s), expression analysis of gene duplicates can also be peformed with the script. This step gives out comprehensive information about the correlation among genes in duplicate groups, generates pairwise gene expression plots in a matrix figure and also helps determine divergent expression among duplicates (**Step 10**)
 </div>
 
 
@@ -72,23 +72,24 @@ DupyliCate also facilitates optional gene expression analysis of gene duplicates
 
 ## Installation and dependencies
 
-(1) Manual installation
+### (1) Manual installation
 
-	Clone this repository
- 	
-  	Mandatory dependencies: 
-   
-   		Tools - BLAST/DIAMOND/MMSeqs2
+Clone this repository
 
-  		Python libraries - pandas(v2.3.1 or greater), numpy (v2.3.2 or greater), seaborn (v0.13.2 or greater), matplotlib (v3.10.5 or greater), scipy (v1.16.1 or greater)
+**Mandatory dependencies:**
 
- 	Optional dependencies:
+- **Tools**: BLAST, DIAMOND, MMSeqs2
 
-  		Tools - GeMoMa, BUSCO, AGAT, MAFFT, FastTree
+- **Python libraries**: pandas (v2.3.1 or greater), numpy (v2.3.2 or greater), seaborn (v0.13.2 or greater), matplotlib (v3.10.5 or greater), scipy (v1.16.1 or greater)
 
- 		Python libraries - dendropy (v5.0.8), tqdm (v4.67.1)
+**Optional dependencies:**
 
-(2) Docker installation
+- **Tools**: GeMoMa, BUSCO, AGAT, MAFFT, FastTree
+  
+- **Python libraries**: dendropy (v5.0.8), tqdm (v4.67.1)
+
+### (2) Docker installation
+
 
 
 
@@ -220,6 +221,10 @@ OPTIONAL:
 ```
 ## Description of output files
 
+- **md5sum.tsv**: Contains the md5sums of every input file used in a particular run of the tool
+
+- **run_parameters.json**: json file that keeps a record of all the parameters used for a particular run of the tool
+
 - **Duplication landscape plots**: Histogram plots of normalized bit scores of a gene's second best hit and self hit in self alignment of the sample; Depicts the genome level gene duplication status.
 
 - **BUSCO QC Summary file**: TSV file with information about BUSCO completeness, duplication, Feff (pseudo-ploidy number - approximate indication of ploidy)
@@ -233,3 +238,10 @@ OPTIONAL:
 - **Singletons**: Singletons folder containing organism-wise singleton gene output TSV files
 
 - **Comparative_duplicates_table**: Comparative genomics table depicting the specific genes and their copy numbers in sample organisms; These specific genes are orthologs of user specified genes in the reference organism whose copy number 										variation the user wants to know
+
+- **Ka_Ks_analysis**: Folder containing organism-wise Ka/Ks computation TSV files of gene duplicates on an individual gene basis along with statistical significance and nature of selection pressure
+
+- **Duplicates_analysis**: Folder containing organism wise gene expression output folders; Each organism folder shows Plots folder, Stats folder, the kernel density estimation plot of correlation coefficients used for determining the 						           divergent expression threshold, and TXT file of perceived pseudogenes (genes that have low expression across the different RNASeq samples used for generating the counts table file) in that organism
+
+- **Specific_duplicates_analysis**: Folder similar to the Duplicates_analysis folder, except that contains the respective output folders, and files for specific gene duplicates
+
