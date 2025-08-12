@@ -116,3 +116,21 @@ ALLOWED FILE EXTENSIONS:
 	'.pep.fna.gz','.tsv','.txt','.txt.gz','.tpms.txt','.tpms.txt.gz'>
 
 ```
+
+```
+Usage:
+
+	python3 AGAT_wrapper.py
+
+MANDATORY:
+
+	--gff_in <full path to GFF3 file or folder containing GFF3 annotation files>
+
+	--gff_out <full path to output folder or output file>
+
+OPTIONAL:
+
+	--agat <full path to the agat_convert_sp_gxf2gxf.pl script including the script name>
+
+```
+	
