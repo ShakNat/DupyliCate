@@ -2,35 +2,102 @@
 
 <img width="3933" height="2583" alt="Dupylicate_github_schematic" src="https://github.com/user-attachments/assets/cbae189d-19d2-45a3-b75f-fb0dbc5c4a25" />
 
-DupyliCate is a light weight python tool for mining, classification and analysis of gene duplications. It can help find and classify gene duplicates in a number of organisms concurrently and is designed to have high throughput. It can be used with a reference organism for comparative analysis or in a reference-free manner for intra-species gene duplicates identification. The tool moreover can be used with a reference organism to obtain a comparative gene table of specific genes in the reference, whose ortholog/ paralog fates that the user wants to know in other sample organisms, thus facilitating in-depth comparative genomic analyses.
-There are two main modes of DupyliCate - 
-'Overlap': Gene duplicates repeat across groups and this mode also produces an output file called 'Duplicates_relationships' that connects the different genes repeating across the duplicate classes - tandems, proximals, dispersed
-'Strict' : Gene duplicates do not repeat across groups and this mode produces a fourth class of duplicates type called 'Mixed_duplicates' where the gene duplicates from different duplicate classes - tandems, proximals, dispersed
-DupyliCate also facilitates optional gene expression analysis of gene duplicates using count table data. Further, it provides the user, option to calculate Ka/Ks values of the duplicates on a gene-level basis. 
 
+<div align="justify">
+	
+DupyliCate is a light weight python tool for mining, classification and analysis of gene duplications. It can help find and classify gene duplicates in a number of organisms concurrently and is designed to have high throughput. It can be used with a reference organism for comparative analysis or in a reference-free manner for intra-species gene duplicates identification. The tool moreover can be used with a reference organism to obtain a comparative gene table of specific genes in the reference, whose copy number variation that the user wants to know in other sample organisms, thus facilitating in-depth comparative genomic analyses.
+
+
+There are two main modes of DupyliCate - 
+
+
+**'Overlap'**: Gene duplicates repeat across groups and this mode also produces an output file called 'Duplicates_relationships' that connects the different genes repeating across the duplicate classes - tandems, proximals, dispersed
+
+**'Strict'** : Gene duplicates do not repeat across groups and this mode produces a fourth class of duplicates type called 'Mixed_duplicates' where the gene duplicates from different duplicate classes - tandems, proximals, dispersed are merged together to retain their individual classification an also their relationship across the groups
+
+DupyliCate also facilitates optional gene expression analysis of gene duplicates using count table data. Further, it provides the user, option to calculate Ka/Ks values of the duplicates. 
+</div>
 
 ## Workflow
 <img width="4638" height="5484" alt="Dupylicate_workflow_diagram" src="https://github.com/user-attachments/assets/a818ed9f-530f-4b54-bf4a-8cc0fa5f2ce7" />
 
-(1) DupyliCate needs the structural annotation file(s) (GFF3) along with one of assembly or coding sequence or peptide sequence FASTA file(s). In case, structural annotation is not available for a sample organism in which duplicates need to be analysed, there is an option to provide the annotation of a related organism's annotation as reference. This will then be used to produce the required annotation and carry out further analysis. 
-The input files are first checked and validated before the actual run starts. If, the check fails, the script exits and the errors will be recorded and displayed organism-wise in the path Tmp/Errors_warnings. In case of GFF errors, there is a helper script provided along with the main script that uses AGAT to process and correct the GFF files. The corrected and validated files then enter the main analysis. 
+<div align="justify">
+	
+(1) DupyliCate needs the structural annotation file(s) (GFF3) along with one of assembly or coding sequence or peptide sequence FASTA file(s). In case, structural annotation is not available for a sample organism in which duplicates need to be analysed, there is an option to provide the annotation of a related organism's annotation as reference. This will then be used to produce the required annotation and carry out further analysis. (**Step 1**)
+</div>
 
-(2) Since the output depends on the quality of the input files and is also influenced by the ploidy of the organisms being analysed, a BUSCO-based QC step is included. This provides detailed QC reports containing the BUSCO completeness, duplication and BUSCO-derived pseudo-ploidy number. Before moving on to the duplication analysis, it is important to segregate singletons and duplicates correctly. For this, two cut-offs - one based on normalized bit score and self-similarity are offered. A more detailed information on the cut-offs and parameters can be obtained here. By default, a BUSCO-based auto threshold method is chosen, where BUSCO single copy genes are used to identify the normalized bit score threshold to segregate singletons and duplicates. If BUSCO is not available or if the organism has a very low number of BUSCO single copy genes, then the default fallback is to go for a default self-similarity threshold instead of normalized bit score threshold. There is an option to manually set the normalized bit score threshold and self-similarity threshold as well.
+<div align="justify">
+	
+(2) The input files are first checked and validated before the actual run starts. If, the check fails, the script exits and the errors will be recorded and displayed organism-wise in the path Tmp/Errors_warnings. In case of GFF errors, there is a helper script provided along with the main script that uses AGAT to process and correct the GFF files. The corrected and validated files then enter the main analysis and processed to give PEP files without alternate transcripts. (**Steps 2,3**)
+</div>
 
-(3) Self alignment of sample organisms is performed and if a reference organism is provided, forward alignment of each sample is performed against this reference organism. This is followed by a comprehensive ortholog detection step, where a synergy of local, global alignments and phylogeny is utilized to obtain orthologs of genes in the samples against the reference genes. 
+<div align="justify">
+	
+(3) Since the output depends on the quality of the input files and is also influenced by the ploidy of the organisms being analysed, a BUSCO-based QC step is included. This provides detailed QC reports containing the BUSCO completeness, duplication and BUSCO-derived pseudo-ploidy number. (**Step 4**)
+</div>
 
-(4) Next, the duplicates clustering and grouping step is performed sample organism-wise. In the presence of a reference organism, synteny analysis is also carried out for small scale gene duplicate groups of tandem and proximal duplicates, to add a confidence layer of genomic positional context. Also, if a reference is involved, detailed gene duplicate group nature details like gene group expansion, de novo duplication etc., are provided for small scale gene duplicate groups of tandem and proximal duplicates in the output. Finally, as a clustering approach is used to obtain gene duplicate groups/ arrays, for all the duplicate groups in the output, there is an internal scoring scheme used to classify the group as low, moderate and high confidence group that can help in interpreting the results accordingly. Along with the different duplicate group files, the singletons in a sample organism are also provided organism-wise. It is important to note that, in the reference-free mode, ortholog detection, synteny analysis, gene group nature analysis steps are absent.
+<div align="justify">
+	
+(4) Before moving on to the duplication analysis, it is important to segregate singletons and duplicates correctly. For this, two cut-offs - one based on normalized bit score and self-similarity are offered. A more detailed information on the cut-offs and parameters can be obtained here. By default, a BUSCO-based auto threshold method is chosen, where BUSCO single copy genes are used to identify the normalized bit score threshold to segregate singletons and duplicates. If BUSCO is not available or if the organism has a very low number of BUSCO single copy genes, then the default fallback is to go for a default self-similarity threshold instead of normalized bit score threshold. There is an option to manually set the normalized bit score threshold and self-similarity threshold as well. (**Step 5**)
+</div>
 
-(5) With the availability of 
+<div align="justify">
+	
+(5) Self alignment of sample organisms is performed and if a reference organism is provided, forward alignment of each sample is performed against this reference organism. This is followed by a comprehensive ortholog detection step, where a synergy of local, global alignments and phylogeny is utilized to obtain orthologs of genes in the samples against the reference genes. (**Steps 5,6**)
+</div>
+
+<div align="justify">
+	
+(6) Next, the duplicates clustering and grouping step is performed sample organism-wise. In the presence of a reference organism, synteny analysis is also carried out for small scale gene duplicate groups of tandem and proximal duplicates, to add a confidence layer of genomic positional context. Also, if a reference is involved, detailed gene duplicate group nature details like gene group expansion, de novo duplication etc., are provided for small scale gene duplicate groups of tandem and proximal duplicates in the output. (**Steps 7,8**)
+</div>
+
+<div align="justify">
+	
+(7)Finally, as a clustering approach is used to obtain gene duplicate groups/ arrays, for all the duplicate groups in the output, there is an internal scoring scheme used to classify the group as low, moderate and high confidence group that can help in interpreting the results accordingly. Along with the different duplicate group files, the singletons in a sample organism are also provided organism-wise. It is important to note that, in the reference-free mode, ortholog detection, synteny analysis, gene group nature analysis steps are absent. (**Steps 7,8**)
+</div>
+
+<div align="justify">
+	
+(9) Ka/Ks computation can also be done for all gene duplicates on an individual gene basis using either Nei Gojobori or Modified Ynag Nielsen methods. Please note that assembly FASTA file(s) or coding sequence file(s) are required along with the annotation file for Ka/Ks analysis. (**Step 9**)
+</div>
+
+<div align="justify">
+	
+(10) If expression data is available for the sample organism(s), expression analysis of gene duplicates can also be peformed with the script. (**Step 10**)
+</div>
 
 
 ## Gene duplicates types output by DupyliCate
 <img width="3120" height="1851" alt="Gene_duplicates_types" src="https://github.com/user-attachments/assets/ca081760-2e30-4eea-bfb3-94877b443d6f" />
 
+## Installation and dependencies
+
+(1) Manual installation
+
+	Clone this repository
+ 	
+  	Mandatory dependencies: 
+   
+   		Tools - BLAST/DIAMOND/MMSeqs2
+
+  		Python libraries - pandas(v2.3.1 or greater), numpy (v2.3.2 or greater), seaborn (v0.13.2 or greater), matplotlib (v3.10.5 or greater), scipy (v1.16.1 or greater)
+
+ 	Optional dependencies:
+
+  		Tools - GeMoMa, BUSCO, AGAT, MAFFT, FastTree
+
+ 		Python libraries - dendropy (v5.0.8), tqdm (v4.67.1)
+
+(2) Docker installation
+
+
+
+## Running the script
+
 ```
 Usage:
 
-  python3 Dupylicate.py
+  python3 DupyliCate.py
 
 MANDATORY:
 
@@ -151,4 +218,18 @@ OPTIONAL:
 	--agat <full path to the agat_convert_sp_gxf2gxf.pl script including the script name>
 
 ```
-## 
+## Description of output files
+
+- **Duplication landscape plots**: Histogram plots of normalized bit scores of a gene's second best hit and self hit in self alignment of the sample; Depicts the genome level gene duplication status.
+
+- **BUSCO QC Summary file**: TSV file with information about BUSCO completeness, duplication, Feff (pseudo-ploidy number - approximate indication of ploidy)
+
+- **Tandem duplicates, Proximal duplicates, Dispersed duplicates**: Folders containing organism-wise tandem, proximal and dispersed gene duplicates output TSV files
+
+- **Mixed duplicates**: Mixed duplicates folder containing organism-wise mixed duplicates output TSV files (output in strict mode)
+
+- **Duplicates_relationships**: Duplicates relationships folder containing organism-wise duplicates relationships across duplicate gruops (output in overlap mode)
+
+- **Singletons**: Singletons folder containing organism-wise singleton gene output TSV files
+
+- **Comparative_duplicates_table**: Comparative genomics table depicting the specific genes and their copy numbers in sample organisms; These specific genes are orthologs of user specified genes in the reference organism whose copy number 										variation the user wants to know
