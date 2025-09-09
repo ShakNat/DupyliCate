@@ -5,7 +5,7 @@
 
 <div align="justify">
 	
-DupyliCate is a light weight python tool for mining, classification and analysis of gene duplications. It can help find and classify gene duplicates in a number of organisms concurrently and is designed to have high throughput. It can be used with a reference organism for comparative analysis or in a reference-free manner for intra-species gene duplicates identification. The tool moreover can be used with a reference organism to obtain a comparative gene table of specific genes in the reference, whose copy number variation that the user wants to know in other sample organisms, thus facilitating in-depth comparative genomic analyses.
+DupyliCate is a python tool for mining, classification and analysis of gene duplications. It can help find and classify gene duplicates in a number of organisms concurrently and is designed to have high throughput. It can be used with a reference organism for comparative analysis or in a reference-free manner for intra-species gene duplicates identification. The tool moreover can be used with a reference organism to obtain a comparative gene table of specific genes in the reference, whose copy number variation that the user wants to know in other sample organisms, thus facilitating in-depth comparative genomic analyses.
 
 
 There are two main modes of DupyliCate - 
