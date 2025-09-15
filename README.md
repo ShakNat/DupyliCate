@@ -116,6 +116,8 @@ OPTIONAL:
 
 	--pseudos_gff <yes | no for optional inclusion or exclusion of pseudogenes with coding features in the GFF file> Default is no
 
+	--gff_config <full path to txt file containing the gff parameters to be used separated by spaces or tabs>
+
 	--mode <overlap | strict modes; in the overlap mode genes repeat among the different duplicates classification; 
 		in the strict mode there is no gene repetition and you have a new classification group called mixed 
 		duplicates containing the related connected components from the other three duplicate classes> DEFAULT is overlap
@@ -142,7 +144,7 @@ OPTIONAL:
 
 	--busco_version <BUSCO version in the format vx.x.x - needed only if you have docker-based BUSCO installation> Deafult is v5.8.2
 
-	-- container_version <docker container version of BUSCO> Default is cv1
+	--container_version <docker container version of BUSCO> Default is cv1
 
 	--docker_host_path < full host folder path - needed for docker-based BUSCO installation>
 
@@ -153,6 +155,8 @@ OPTIONAL:
 	--self_simcut <float similarity percentage to remove self alignment hits with low similarity percentage> Default is 50.0
 
 	--hits <number of top hits to be considered for finding suitable orthologs in the reference organism> Default is 10
+
+	--ortho_candidates <user specified integer value for listing the potential ortholog candidates for low confidence ortholog cases> Default is 3
 
 	--occupancy <float number cutoff for MAFFT aligned file trimming> Default is 0.1
 
