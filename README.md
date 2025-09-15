@@ -203,7 +203,7 @@ ALLOWED FILE EXTENSIONS:
 
 ```
 
-## GFF fields config file preparation instructions for Dupylicate.py:
+### GFF fields config file preparation instructions for Dupylicate.py:
 	
  1) This is a simple .txt file containing the gff parameters in different columns
 
@@ -257,14 +257,30 @@ Understanding the GFF config file:
   both the child-parent linker and the parent attribute in the above example point to AT1G01010.Araport11.447; This is important to ensure that the transcripts
   correctly map to the parent gene especially in the alternate transcript removal step
 
-## Preparing list of reference genes for specific analysis
+### Preparing list of reference genes for specific analysis
 
 1) If you have a known list of genes in the reference organism whose copy number variation you want to analyze in the sample,
-   the --speicifc_genes flag can be used. 
+   the --specific_genes flag can be used. 
 
-2) This needs the full path to a simple .txt file.
+2) This needs the full path to a simple .txt file
 
-3) This .txt file should have the 
+3) This .txt file should have one transcript name per line
+
+### Preparing the txt file for GeMoMa annotation
+
+1) In case, some of your input files lack structural annotation, the --to_annotate flag in the script can be used
+
+2) This needs the full path to a simple .txt file
+
+3) The name of the organism to be annotated followed by comma and the name of the reference organism to
+   be used for annotation must be mentioned in a line
+
+4) If there are multiple organisms for annotation, specify each of them along with their respective reference
+   in a single line in the format as specified above
+
+   eg.
+    Vamurensis,Vvinifera
+   	Vrotundifolia,Vvinifera
 
 ## Helper scripts
 
@@ -303,7 +319,7 @@ OPTIONAL:
 	--cores <number of cores for running the script>
 ```
 
-## Config file preparation instructions for Fasta_fix.py:
+### Config file preparation instructions for Fasta_fix.py:
 
 1). The config file is a simple .txt file
 
