@@ -203,6 +203,71 @@ ALLOWED FILE EXTENSIONS:
 
 ```
 
+## GFF fields config file preparation instructions for Dupylicate.py:
+	
+ 1) This is a simple .txt file containing the gff parameters in different columns
+
+ 2) The columns can be separated by tabs or spaces
+
+ 3) There are four columns mandatorily needed in the config file in the following order:
+
+	(i) base file name - same as the base name you use for the gff file | all in case all the gff have the same gff pattern
+		
+  	(ii) child_attribute: attribute field of the mRNA or transcript feature in the file like ID
+	
+	(iii) child_parent_linker: attribute field of the mRNA or transcript, CDS, exon features that link them with their 
+			  respective parent feature like Parent - Note: base assumption by the tool is that all child levels
+			  have the same child-parent linker attribute fields. For eg., if Parent is the child-parent linker in the mRNA feature line,
+			  then Parent will be the child-parent linker for all other child-level feature lines in the GFF
+							
+	(iv) parent_attribute: attribute field of the gene feature like ID 
+
+**Sample config file and GFF file example:**
+
+If the config looks like this -
+
+all	Name	Parent	ID
+
+And the corresponding GFF file looks as below - 
+
+##gff-version 3
+
+##annot-version Araport11
+
+##species Arabidopsis thaliana columbia
+
+Chr1    	phytozomev12    	gene    	3631    	5899    	.       	+       	.       	**ID=AT1G01010.Araport11.447**;Name=AT1G01010
+
+Chr1    	phytozomev12    	mRNA    	3631    	5899    	.       	+       	.       	ID=AT1G01010.1.Araport11.447;**Name=AT1G01010.1**;pacid=37401853;longest=1;geneName=NAC001;**Parent=AT1G01010.Araport11.447**
+
+
+Understanding the GFF config file:
+
+- The first column of the file says all. This means all the files in the analysis will have the same GFF file format/ pattern
+
+- The second column that is the child attribute column is Name. So the text following the Name field in the last column of
+  the mRNA feature will be picked which is AT1G01010.1 above
+
+- The third column that is the child-parent linker column is Parent. It is the field Parent in mRNA that links it to its parent gene,
+  and in the above example its corresponding text picked will be AT1G01010.Araport11.447
+
+- The fourth column is the parent attribute that is mentioned as ID. In the above example it is the ID field in the gene feature line which is AT1G01010.Araport11.447
+
+- **IMPORTANT:** It is important to note that the child-parent linker and the parent must be chosen in such a way that they point to the same text. For example,
+  both the child-parent linker and the parent attribute in the above example point to AT1G01010.Araport11.447; This is important to ensure that the transcripts
+  correctly map to the parent gene especially in the alternate transcript removal step
+
+## Preparing list of reference genes for specific analysis
+
+1) If you have a known list of genes in the reference organism whose copy number variation you want to analyze in the sample,
+   the --speicifc_genes flag can be used. 
+
+2) This needs the full path to a simple .txt file.
+
+3) This .txt file should have the 
+
+## Helper scripts
+
 ```
 Usage:
 
@@ -219,6 +284,72 @@ OPTIONAL:
 	--agat <full path to the agat_convert_sp_gxf2gxf.pl script including the script name>
 
 ```
+
+```
+Usage:
+
+	python3 Fasta_fix.py
+
+MANDATORY:
+
+	--in <full path to a folder containing FASTA files or a single FASTA file>
+
+	--out <full path to output directory>
+
+	--config <full path to config file including the config file name>
+
+OPTIONAL:
+
+	--cores <number of cores for running the script>
+```
+
+## Config file preparation instructions for Fasta_fix.py:
+
+1). The config file is a simple .txt file
+
+2). Specify the organism name i.e. the base name without the extension of your file in the first column
+
+3). If the same set of string manipulation operations are to be performed for all the files in a folder,
+	just specify the word all in the first column and follow it up in the next columns with the desired
+	operations - This single line is enough if the same set of operations are to be performed on all the files
+
+4). Specify the various string manipulation operations to be performed on the FASTA header of this particular
+	organism's file in the subsequent columns separated by white space or tab
+
+5) **IMPORTANT**: The operations will be performed in the same order as you specify them in the config wise i.e.
+    column wise order of the different operations you specify will be followed by the script; 
+    Hence operation ORDER is IMPORTANT
+
+6) Possible operations and the manner in which they are to be specified are as follows
+   i. extract: <to extract text of a particular attribue in the header>
+      example- extract:ID=:; <This tells extract the text following the attribute ID= in the header
+								until the delimiter ; is encountered><If you specify no delimiter, a
+								default list of delimiters will be searched automatically by the script>
+
+   ii. split: <specify a character at which splitting must be done>
+		example- split:_ <This will split the text at undersore>
+
+   iii. take: <specify a single position or multiple positions separated by commas to be taken after splitting>
+		example- take:1,3 <This will take the first and third elements after splitting>
+
+   iv. join: <join a list of string elements using a specific character>
+		example- join:- <This will join a list of strings into a single string separated by - >
+
+   v. remove: <to remove a particular pattern from the text>
+	  example- remove:v2 <This will remove v2 from the text>
+
+   vi. add_prefix: <to add a prefix to the text>
+       add_suffix: <to add a suffix to the text>
+       example: add_suffix:ath <This will add the text ath to the text>
+
+   vii. replace: <to replace a specfic character with another character or pattern; Specify the pattern
+			      to be replaced first and the pattern to be added in its place - separate these two 
+			      with a comma>
+        example- replace:phytozome,phyt <This will replace phytozome with phyt>
+
+  viii. uppercase <to capitalize the text fully>
+		lowercase <to write the full text in lower case>
+
 ## Description of output files
 
 - **md5sum.tsv**: Contains the md5sums of every input file used in a particular run of the tool
