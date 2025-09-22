@@ -489,6 +489,12 @@ OPTIONAL:
 
 ## Common error prone steps and some recommendations
 
+- Please remember to add / at the end of the folder path when giving a folder of input files to DupyliCate
+
+- Please ensure that the files have the allowed extensions as listed above in the main script usage
+
+- The base names of the files excluding the extensions must be the same across all input files, the config files, and the annotation txt file for GeMoMa annotation
+
 - Gene duplications classification needs the GFF file(s) as the inputs. Since GFF files have wide varying formats, the analysis can be interrupted at the validation step due to GFF file formatting issues
   
 - Next, the FASTA headers need to match specific GFF attribute fields. Otherwise, the analysis would stop after the validation and PEP file generation step
