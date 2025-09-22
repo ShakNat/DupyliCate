@@ -231,7 +231,9 @@ ALLOWED FILE EXTENSIONS:
 			  then Parent will be the child-parent linker for all other child-level feature lines in the GFF
     </div>
 							
-	(iv) parent_attribute: attribute field of the gene feature like ID 
+	(iv) parent_attribute: attribute field of the gene feature like ID
+
+    (v) By default in the script, child_attribute is ID, child_parent_linker is Parent, and parent_attribute is ID
 
 **Sample config file and GFF file example:**
 ```
