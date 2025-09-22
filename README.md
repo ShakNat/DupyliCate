@@ -5,7 +5,7 @@
 
 <div align="justify">
 	
-DupyliCate is a python tool for mining, classification and analysis of gene duplications. It can help find and classify gene duplicates in a number of organisms concurrently and is designed to have high throughput. It can be used in a reference-free manner for intra-species gene duplicates identification, and classification or with a reference organism for comparative genomic analysis. The tool moreover can be used with a reference organism to obtain a comparative gene table of specific genes in the reference, whose copy number variation that the user wants to know in other sample organisms, thus facilitating in-depth comparative genomic analyses.
+DupyliCate is a python tool for mining, classification and analysis of gene duplications. It can help find and classify gene duplicates in a number of organisms concurrently and is designed to have high throughput. It can be used in a reference-free manner for intra-species gene duplicates identification, and classification or with a reference organism for comparative genomic analysis. The gene duplicates will however be identified and classified using intra-species local alignment in both the cases. The only difference is that, in the presence of a reference, the orthologs for the sample organism genes in the reference organism genome will be assigned, and further analysis pertaining synteny and gene copy number variation will be carried out. The tool moreover can be used with a reference organism to obtain a comparative gene table of specific genes in the reference, whose copy number variation that the user wants to know in other sample organisms, thus facilitating in-depth comparative genomic analyses.
 
 
 There are two main modes of DupyliCate - 
@@ -53,7 +53,7 @@ DupyliCate also facilitates optional gene expression analysis of gene duplicates
 
 <div align="justify">
 	
-(7)Finally, as a clustering approach is used to obtain gene duplicate groups/ arrays, for all the duplicate groups in the output, there is an internal scoring scheme used to classify the group as low, moderate and high confidence group that can help in interpreting the results accordingly. Along with the different duplicate group files, the singletons in a sample organism are also provided organism-wise. It is important to note that, in the reference-free mode, ortholog detection, synteny analysis, gene group nature analysis steps are absent. (**Steps 7,8**)
+(7) Finally, as a clustering approach is used to obtain gene duplicate groups/ arrays, for all the duplicate groups in the output, there is an internal scoring scheme used to classify the group as low, moderate and high confidence group that can help in interpreting the results accordingly. Along with the different duplicate group files, the singletons in a sample organism are also provided organism-wise. It is important to note that, in the reference-free mode, ortholog detection, synteny analysis, gene group nature analysis steps are absent. (**Steps 7,8**)
 </div>
 
 <div align="justify">
@@ -433,6 +433,9 @@ OPTIONAL:
   &nbsp;Understanding their nature like whether they lead to gene expansion, conservation or de novo duplication can lead to crucial biological insights;
   
   &nbsp;The nature of duplicate group provides this information as detailed in the image below
+  
+
+<img width="2985" height="1743" alt="Gene_duplicates_group_nature" src="https://github.com/user-attachments/assets/8dbc31da-955f-40c1-ab9f-78c8ff902ae7" />
 
 
 - **Singletons**: Singletons folder containing organism-wise singleton gene output TSV files
@@ -485,4 +488,22 @@ OPTIONAL:
   disabling their correlation analysis and gene expression plotting
 
 - **Specific_duplicates_analysis**: Folder similar to the Duplicates_analysis folder, except that contains the respective output folders, and files for specific gene duplicates
+
+## Common error prone steps and some recommendations
+
+- Gene duplications classification needs the GFF file(s) as the inputs. Since GFF files have wide varying formats, the analysis can be interrupted at the validation step due to GFF file formatting issues
+  
+- Next, the FASTA headers need to match specific GFF attribute fields. Otherwise, the analysis would stop after the validation and PEP file generation step
+
+- Please look into the GFF config file preparation instructions to avoid such errors during analysis
+
+<div align="justify">
+- The script is designed in such a way that it can start from the point, an analysis was stopped or interrupted. But if the output files of the previous steps are truncated or empty,
+  this will not be captured and may cause errors downstream. It is safe to remove the output files of the step that was interrupted while retaining the files generated in the earlier steps to facilitate a seamless run despite interruptions.
+</div>
+
+## Reference
+
+
+  
 
