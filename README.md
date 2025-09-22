@@ -337,30 +337,27 @@ OPTIONAL:
 
 ### Config file preparation instructions for Fasta_fix.py:
 
-1). The config file is a simple .txt file
+1. The config file is a simple .txt file
 
-2). Specify the organism name i.e. the base name without the extension of your file in the first column
+2. Specify the organism name i.e. the base name without the extension of your file in the first column
 
-<div align="justify">
-3). If the same set of string manipulation operations are to be performed for all the files in a folder,
+	<div align="justify">
+3. If the same set of string manipulation operations are to be performed for all the files in a folder,
 	just specify the word all in the first column and follow it up in the next columns with the desired
 	operations - This single line is enough if the same set of operations are to be performed on all the files
-</div>
+	</div>
 
-<div align="justify">
-4). Specify the various string manipulation operations to be performed on the FASTA header of this particular
+	<div align="justify">
+4. Specify the various string manipulation operations to be performed on the FASTA header of this particular
 	organism's file in the subsequent columns separated by white space or tab
-</div>
-
-<div align="justify">
+	</div>
 	
-5) **IMPORTANT**: The operations will be performed in the same order as you specify them in the config wise i.e.
+5. **IMPORTANT**: The operations will be performed in the same order as you specify them in the config wise i.e.
     column wise order of the different operations you specify will be followed by the script; 
     Hence operation ORDER is IMPORTANT
-</div>
 
-6) Possible operations and the manner in which they are to be specified are as follows
-   <div align="justify">
+6. Possible operations and the manner in which they are to be specified are as follows
+	<div align="justify">
    i. extract: <to extract text of a particular attribue in the header>
       example- extract:ID=:; <This tells extract the text following the attribute ID= in the header
 								until the delimiter ; is encountered><If you specify no delimiter, a
@@ -388,8 +385,9 @@ OPTIONAL:
 			      with a comma>
         example- replace:phytozome,phyt <This will replace phytozome with phyt>
 
-  viii. uppercase <to capitalize the text fully>
-		lowercase <to write the full text in lower case>
+   viii. uppercase <to capitalize the text fully>
+  
+    &nbsp;&nbsp;&nbsp;&nbsp;lowercase <to write the full text in lower case>
 
 ## Description of output files
 
@@ -502,7 +500,7 @@ OPTIONAL:
   this will not be captured and may cause errors downstream. It is safe to remove the output files of the step that was interrupted while retaining the files generated in the earlier steps to facilitate a seamless run despite interruptions.
 </div>
 
-## Reference
+## References
 
 
   
