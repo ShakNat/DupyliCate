@@ -5,7 +5,7 @@
 
 <div align="justify">
 	
-DupyliCate is a python tool for mining, classification and analysis of gene duplications. It can help find and classify gene duplicates in a number of organisms concurrently and is designed to have high throughput. It can be used with a reference organism for comparative analysis or in a reference-free manner for intra-species gene duplicates identification. The tool moreover can be used with a reference organism to obtain a comparative gene table of specific genes in the reference, whose copy number variation that the user wants to know in other sample organisms, thus facilitating in-depth comparative genomic analyses.
+DupyliCate is a python tool for mining, classification and analysis of gene duplications. It can help find and classify gene duplicates in a number of organisms concurrently and is designed to have high throughput. It can be used in a reference-free manner for intra-species gene duplicates identification, and classification or with a reference organism for comparative genomic analysis. The tool moreover can be used with a reference organism to obtain a comparative gene table of specific genes in the reference, whose copy number variation that the user wants to know in other sample organisms, thus facilitating in-depth comparative genomic analyses.
 
 
 There are two main modes of DupyliCate - 
@@ -78,13 +78,13 @@ Clone this repository
 
 **Mandatory dependencies:**
 
-- **Tools**: BLAST, DIAMOND, MMSeqs2
+- **Tools**: BLAST, DIAMOND, MMSeqs2 (latest versions preferred)
 
 - **Python libraries**: pandas (v2.3.1 or greater), numpy (v2.3.2 or greater), seaborn (v0.13.2 or greater), matplotlib (v3.10.5 or greater), scipy (v1.16.1 or greater)
 
 **Optional dependencies:**
 
-- **Tools**: GeMoMa, BUSCO, AGAT, MAFFT, FastTree
+- **Tools**: GeMoMa, BUSCO, AGAT, MAFFT, FastTree (latest versions preferred)
   
 - **Python libraries**: dendropy (v5.0.8), tqdm (v4.67.1)
 
@@ -93,12 +93,17 @@ Clone this repository
 
 
 
+**Note:** If you are using a docker image of the tool, you need not specify the dependencies' full paths while running the tool; 
+          The dependencies are built-in in the docker image and that makes it simple to use the tool across systems without the 
+		  need for local installations.
+
+
 ## Running the script
 
 ```
 Usage:
 
-  python3 DupyliCate.py
+  python3 dupylicate.py
 
 MANDATORY:
 
@@ -218,16 +223,18 @@ ALLOWED FILE EXTENSIONS:
 	(i) base file name - same as the base name you use for the gff file | all in case all the gff have the same gff pattern
 		
   	(ii) child_attribute: attribute field of the mRNA or transcript feature in the file like ID
-	
+
+    <div align="justify">
 	(iii) child_parent_linker: attribute field of the mRNA or transcript, CDS, exon features that link them with their 
 			  respective parent feature like Parent - Note: base assumption by the tool is that all child levels
 			  have the same child-parent linker attribute fields. For eg., if Parent is the child-parent linker in the mRNA feature line,
 			  then Parent will be the child-parent linker for all other child-level feature lines in the GFF
+    </div>
 							
 	(iv) parent_attribute: attribute field of the gene feature like ID 
 
 **Sample config file and GFF file example:**
-
+```
 If the config looks like this -
 
 all	Name	Parent	ID
@@ -240,10 +247,10 @@ And the corresponding GFF file looks as below -
 
 ##species Arabidopsis thaliana columbia
 
-Chr1    	phytozomev12    	gene    	3631    	5899    	.       	+       	.       	**ID=AT1G01010.Araport11.447**;Name=AT1G01010
+Chr1    	phytozomev12    	gene    	3631    	5899    	.       	+       	.       	ID=AT1G01010.Araport11.447;Name=AT1G01010
 
-Chr1    	phytozomev12    	mRNA    	3631    	5899    	.       	+       	.       	ID=AT1G01010.1.Araport11.447;**Name=AT1G01010.1**;pacid=37401853;longest=1;geneName=NAC001;**Parent=AT1G01010.Araport11.447**
-
+Chr1    	phytozomev12    	mRNA    	3631    	5899    	.       	+       	.       	ID=AT1G01010.1.Araport11.447;Name=AT1G01010.1;pacid=37401853;longest=1;geneName=NAC001;Parent=AT1G01010.Araport11.447
+```
 
 Understanding the GFF config file:
 
@@ -257,9 +264,12 @@ Understanding the GFF config file:
 
 - The fourth column is the parent attribute that is mentioned as ID. In the above example it is the ID field in the gene feature line which is AT1G01010.Araport11.447
 
+<div align="justify">
+	
 - **IMPORTANT:** It is important to note that the child-parent linker and the parent must be chosen in such a way that they point to the same text. For example,
   both the child-parent linker and the parent attribute in the above example point to AT1G01010.Araport11.447; This is important to ensure that the transcripts
   correctly map to the parent gene especially in the alternate transcript removal step
+</div>
 
 ### Preparing list of reference genes for specific analysis
 
@@ -283,7 +293,9 @@ Understanding the GFF config file:
    in a single line in the format as specified above
 
    eg.
+   
     Vamurensis,Vvinifera
+   
    	Vrotundifolia,Vvinifera
 
 ## Helper scripts
@@ -329,22 +341,31 @@ OPTIONAL:
 
 2). Specify the organism name i.e. the base name without the extension of your file in the first column
 
+<div align="justify">
 3). If the same set of string manipulation operations are to be performed for all the files in a folder,
 	just specify the word all in the first column and follow it up in the next columns with the desired
 	operations - This single line is enough if the same set of operations are to be performed on all the files
+</div>
 
+<div align="justify">
 4). Specify the various string manipulation operations to be performed on the FASTA header of this particular
 	organism's file in the subsequent columns separated by white space or tab
+</div>
 
+<div align="justify">
+	
 5) **IMPORTANT**: The operations will be performed in the same order as you specify them in the config wise i.e.
     column wise order of the different operations you specify will be followed by the script; 
     Hence operation ORDER is IMPORTANT
+</div>
 
 6) Possible operations and the manner in which they are to be specified are as follows
+   <div align="justify">
    i. extract: <to extract text of a particular attribue in the header>
       example- extract:ID=:; <This tells extract the text following the attribute ID= in the header
 								until the delimiter ; is encountered><If you specify no delimiter, a
 								default list of delimiters will be searched automatically by the script>
+	</div>
 
    ii. split: <specify a character at which splitting must be done>
 		example- split:_ <This will split the text at undersore>
@@ -363,7 +384,7 @@ OPTIONAL:
        example: add_suffix:ath <This will add the text ath to the text>
 
    vii. replace: <to replace a specfic character with another character or pattern; Specify the pattern
-			      to be replaced first and the pattern to be added in its place - separate these two 
+			      to be replaced first and the pattern to be added in its place - separate these two
 			      with a comma>
         example- replace:phytozome,phyt <This will replace phytozome with phyt>
 
@@ -386,13 +407,82 @@ OPTIONAL:
 
 - **Duplicates_relationships**: Duplicates relationships folder containing organism-wise duplicates relationships across duplicate gruops (output in overlap mode)
 
+- The different gene duplicates classification output files have a number of columns. In all the duplicates results files, both in the presence or absence of a reference organism, the following columns are present:
+  
+  (i)   Pairwise gene distance (bp) - Genetic distance in bp between two neighbouring genes in an identified duplicates group
+
+  <div align="justify">
+  (ii)  Actual intervening gene number: The tool considers only protein coding genes for identifying and classifying gene duplicates. But it also important to
+        know the actual number of protein coding and non-coding genes in-between gene duplicates, and the actual intervening gene number gives this information
+  </div>
+  
+  (iii) Apparent intervening gene number: The number of protein coding genes between neighbouring genes in an identified duplicates group
+  
+  (iv) Group confidence: The gene duplicates are clustered into groups. This column gives a confidence score for the reliability of the identified groups -
+  
+  &nbsp;confidence_score <= 0.3 -> Low confidence gene duplicates group
+  
+  &nbsp;confidence_score <= 0.5 -> Moderate confidence gene duplicates group
+  
+  &nbsp;confidence_score > 0.5 -> High confidence gene duplicates group
+  
+  (v) Nature of duplicate group: This column is present only in the small scale duplicate groups - tandems and proximals output files in the presence of a reference organism;
+  
+  &nbsp;Small scale duplicates are mainly responsible for the evolutionary innovations seen in stress response mechanisms and biosynthetic  pathways;
+  
+  &nbsp;Understanding their nature like whether they lead to gene expansion, conservation or de novo duplication can lead to crucial biological insights;
+  
+  &nbsp;The nature of duplicate group provides this information as detailed in the image below
+
+
 - **Singletons**: Singletons folder containing organism-wise singleton gene output TSV files
 
-- **Comparative_duplicates_table**: Comparative genomics table depicting the specific genes and their copy numbers in sample organisms; These specific genes are orthologs of user specified genes in the reference organism whose copy number 										variation the user wants to know
+-  In the presence of a reference organism, the small scale gene duplicates (tandems, proximals) files and the singletons files have a column called Synteny information
+  
+    (vi) Synteny information: This column evaluates the synteny between the identified gene duplicates and their corresponding orthoolog genes in the reference organism
+
+<div align="justify">
+	
+- **Copy_number_table.tsv**: This is found only in the presence of a reference organism and if the user has given specific reference genes or analysis using the --specific_genes flag;
+  
+  &nbsp;Comparative genomics table depicting the specific user-given reference genes and their copy numbers in sample organisms;
+  
+  &nbsp;These specific genes are orthologs of user specified genes in the reference organism whose copy number variation the user wants to know;
+  
+  &nbsp;Every cell in each organism-wise column has the orthologs corresponding to specific reference organism genes in that sample organism;
+  
+  &nbsp;Each such identified orthologous group has a score called Ortholog group confidence score (OGCS) appended to it to show the reliability of the identified orthologous group.
+  
+  &nbsp;The OGCS scoring system is as follows:
+  
+  &nbsp;OGCS <= 0.5 -> Low confidence orthologous group
+  
+  &nbsp;0.5 < OGCS <= 0.8 -> Moderate confidence orthologous group
+  
+  &nbsp;OGCS > 0.8 -> High confidence orthologous group
+
+</div>
+  
+  The ortholog confidence scoring is more stringent than the gene duplicates confidence scoring system because of the species specific variations and distance considerations between the reference and sample organisms
+
+<div align="justify">
+	
+- **Copy_number_table.xlsx**: This output file is also found only in the presence of a reference organism and if the user has given specific reference genes or analysis using the --specific_genes flag;
+  
+  &nbsp;It is the same file as Copy_number_table.tsv, except that, it is red colour coded in the cells that do not have orthologs for specific reference genes in the sample organism(s);
+  
+  &nbsp;Being an xlsx file, this colour difference can be used as a quick presence-absence variation assessment of the user-specified genes for comparative genomics between the reference and the sample organism(s)
+</div>
+
+- **Summary.tsv**: Summary file consolidating the number of different gene duplicates in each analysed sample organism; It also lists the number of gene duplicate groups classified as low/ moderate/ high confidence groups 
 
 - **Ka_Ks_analysis**: Folder containing organism-wise Ka/Ks computation TSV files of gene duplicates on an individual gene basis along with statistical significance and nature of selection pressure
 
-- **Duplicates_analysis**: Folder containing organism wise gene expression output folders; Each organism folder shows Plots folder, Stats folder, the kernel density estimation plot of correlation coefficients used for determining the 						           divergent expression threshold, and TXT file of perceived pseudogenes (genes that have low expression across the different RNASeq samples used for generating the counts table file) in that organism
+- **Duplicates_analysis**: Folder containing organism wise gene expression output folders; Each organism folder shows Plots folder, Stats folder, the kernel density estimation plot of correlation coefficients used for determining the
+  divergent expression threshold, and TXT file of perceived pseudogenes (genes that have low expression across the different RNASeq samples used for generating the counts table file) in that organism;
+  
+  &nbsp;It is important to note that some gene duplicate groups can have statistics folder present, but might not have corresponding plots folder due to the possibility of all or most of them being perceived pseudogenes,
+  disabling their correlation analysis and gene expression plotting
 
 - **Specific_duplicates_analysis**: Folder similar to the Duplicates_analysis folder, except that contains the respective output folders, and files for specific gene duplicates
 
