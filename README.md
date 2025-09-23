@@ -1,4 +1,6 @@
-# DupyliCate
+<img width="100" height="100" alt="draft_dupylicate_logo" src="https://github.com/user-attachments/assets/b46fb8c0-c6b7-440f-9323-5a8ad76c79c0" />
+
+# DupyliCate 
 
 <img width="3933" height="2583" alt="Dupylicate_github_schematic" src="https://github.com/user-attachments/assets/cbae189d-19d2-45a3-b75f-fb0dbc5c4a25" />
 
