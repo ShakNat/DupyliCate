@@ -482,6 +482,34 @@ OPTIONAL:
 
 <div align="justify">
 	
+- **Orthologs**: Folder of ortholog files sample organism-wise. This contains file outputs only when a reference organism is specified. Each ortholog file within the folder is a tsv file with clear headers. Some parameter columns are explained here                   for a better understanding of the file ouput. The third column denotes the confidence score of the assigned ortholog. The individual ortholog scoring is defined as follows:
+
+  - 0.0625 -  Low confidence ortholog 
+
+    - (Ortholog is determined via phylogeny of the forward hits. But it is not among the top forward hits, and all the forward hits are very similar, lowering the confidence greatly)
+
+  - 0.125  -  Low confidence ortholog 
+
+    - (Ortholog is determined via phylogeny of the forward hits. All the forward hits are very similar, making phylogeny analysis results less confident)
+
+  - 0.25   -  Low confidence ortholog 
+
+    - (Ortholog is determined via phylogeny of the forward hits. Top forward hit and the next best hit are not significantly different, lowering the confidence)
+
+  - 0.5    -  Moderate confidence ortholog
+
+    - (Ortholog is the top forward hit determined via synteny analysis. But the top hit is not significantly different from the next best hit, making it a moderately confident assignment)
+
+  - 1      -  High confidence ortholog 
+
+    - (Ortholog is the top forward hit, and it is significantly different from the next best hit, making it a confident assignment)
+
+The ortholog confidence is denoted in the last column. In case of low confidence orthologs, the fourth column has a list of other potential orthologs for the particular sample gene in the first column
+
+</div>
+
+<div align="justify">
+	
 - **Copy_number_table.tsv**: This is found only in the presence of a reference organism and if the user has given specific reference genes or analysis using the --specific_genes flag;
   
   &nbsp;Comparative genomics table depicting the specific user-given reference genes and their copy numbers in sample organisms;
@@ -517,6 +545,9 @@ OPTIONAL:
 
 - **Ka_Ks_analysis**: Folder containing organism-wise Ka/Ks computation TSV files of gene duplicates on an individual gene basis along with statistical significance and nature of selection pressure
 
+  - Each file in this folder is a tsv file. Every individual gene in a gene duplicate group is assigned a Ka/Ks value in this file. This gene-level Ka/Ks value is obtained by a series of statistical analyses, and normalization approaches
+    in the script
+    
 - **Duplicates_analysis**: Folder containing organism wise gene expression output folders; Each organism folder shows Plots folder, Stats folder, the kernel density estimation plot of correlation coefficients used for determining the
   divergent expression threshold, and TXT file of perceived pseudogenes (genes that have low expression across the different RNASeq samples used for generating the counts table file) in that organism;
   
@@ -534,14 +565,19 @@ OPTIONAL:
 - The base names of the files excluding the extensions must be the same across all input files, the config files, and the annotation txt file for GeMoMa annotation
 
 - Gene duplications classification needs the GFF file(s) as the inputs. Since GFF files have wide varying formats, the analysis can be interrupted at the validation step due to GFF file formatting issues
+
+- Some GFF files have mRNA features denoted as mRNA, while some have them denoted as transcript. In cases of merged annotation files, both the terms can denote an mRNA feature. But the script looks for the keyword mRNA first, and if not found,
+  then searches for the word transcript. In case you have a merged annotation, please make the mRNA feature indicator uniform throughout the GFF file - either mRNA throughout or transcript throughout
   
 - Next, the FASTA headers need to match specific GFF attribute fields. Otherwise, the analysis would stop after the validation and PEP file generation step
 
 - Please look into the GFF config file preparation instructions to avoid such errors during analysis
 
 <div align="justify">
+	
 - The script is designed in such a way that it can start from the point, an analysis was stopped or interrupted. But if the output files of the previous steps are truncated or empty,
-  this will not be captured and may cause errors downstream. It is safe to remove the output files of the step that was interrupted while retaining the files generated in the earlier steps to facilitate a seamless run despite interruptions.
+  this will not be captured and may cause errors downstream. It is safe to remove the output files of the step that was interrupted while retaining the files generated in the earlier steps to facilitate a seamless run despite interruptions
+  
 </div>
 
 ## Third party tool references
