@@ -105,104 +105,112 @@ Clone this repository
 ```
 Usage:
 
-  python3 dupylicate.py
+  python3 dupylicate.py --gff <GFF_FILE_OR_DIR>
+                        [--fasta <ASSEMBLY_FASTA_FILE_OR_DIR> | --cds <CDS_FASTA_FILE_OR_DIR> | --pep <PEP_FASTA_FILE_OR_DIR>]
+                        --out <DIR>
+
 
 MANDATORY:
 
-	--gff <full path to folder containing GFF files>
+	--gff 							STR		full path to folder containing GFF files
 
-	--fasta <full path to folder containing WGS FASTA files> | --cds <full path to folder containing CDS FASTA files> | --pep <full path to folder containing PEP files>
+	Choose one of FASTA/PEP/CDS
 
-	--out <full path to output folder>
+	[--fasta						STR		full path to folder containing WGS FASTA files
+
+    --cds							STR		full path to folder containing CDS FASTA files
+
+    --pep							STR		full path to folder containing PEP files]
+
+    Output directory
+
+	--out							STR		full path to output folder
 
 OPTIONAL:
 
-	--ref <name of the organism to be taken as reference> Default is NA and the script runs in reference-free mode
+	--ref							STR			<Name of the organism to be taken as reference <Default is NA and the script runs in reference-free mode>
 
-	--prokaryote <use the flag if the organisms for analysis are prokaryotes>
+	--prokaryote					STR			<Use the flag if the organisms for analysis are prokaryotes>
 
-	--pseudos_gff <yes | no for optional inclusion or exclusion of pseudogenes with coding features in the GFF file> Default is no
+	--pseudos_gff					STR			yes | no	<Optional inclusion or exclusion of pseudogenes with coding features in the GFF file> [DEFAULT is no]
 
-	--gff_config <full path to txt file containing the gff parameters to be used separated by spaces or tabs>
+	--gff_config					STR			<Full path to TXT file containing the gff parameters> 
 
-	--mode <overlap | strict modes; in the overlap mode genes repeat among the different duplicates classification; 
-		in the strict mode there is no gene repetition and you have a new classification group called mixed 
-		duplicates containing the related connected components from the other three duplicate classes> DEFAULT is overlap
+	--mode							STR			overlap | strict [DEFAULT is overlap] 
 
-	--to_annotate <full path to file containing names of queries and the corresponding reference organism for GeMoMa annotation separated by comma - Query,Reference -> one pair per line>
+	--to_annotate					STR			<Full path to TXT file> <containing names of queries and the corresponding reference organism for GeMoMa annotation separated by comma - Query,Reference -> one pair per line
 
-	--seq_aligner <choose one among blast | diamond | mmseqs2 > DEFAULT is blast
+	--seq_aligner					STR			blast | diamond | mmseqs2 [DEFAULT is diamond]
 
-	--blast <full path to BLAST if not already in yopur PATH environment variable>
+	--blast							STR			<Full path to BLAST if not already in yopur PATH environment variable>
 
-	--diamond <full path to diamond if not already in yopur PATH environment variable>
+	--diamond						STR			<Full path to diamond if not already in your PATH environment variable>
 
-	--mmseqs <full path to mmseqs2 if not already in yopur PATH environment variable>
+	--mmseqs						STR			<Full path to mmseqs2 if not already in your PATH environment variable>
 
-	--mafft <full path to MAFFT if not already in yopur PATH environment variable>
+	--mafft							STR			<Full path to MAFFT if not already in your PATH environment variable>
 
-	--evalue <evalue for alignment> DEFAULT is 1e-5
+	--evalue						FLOAT		<evalue for alignment> [DEFAULT is 1e-5]
 
-	--gemoma <full path to GeMoMa if not already in yopur PATH environment variable>
+	--gemoma						STR			<Full path to GeMoMa if not already in your PATH environment variable>
 
-	--qc < yes | no for quality check with BUSCO> Default is no
+	--qc							STR			yes | no	<Quality check with BUSCO> [DEFAULT is no]
 
-	--busco  <full path to BUSCO or choose 'busco_docker' for docker-based BUSCO installtion> Default is 'busco'
+	--busco							STR			Full path to BUSCO | busco_docker [DEFAULT is busco]
 
-	--busco_version <BUSCO version in the format vx.x.x - needed only if you have docker-based BUSCO installation> Deafult is v5.8.2
+	--busco_version					STR			<BUSCO version in the format vx.x.x> [DEFAULT is v5.8.2]  <needed only if you have docker-based BUSCO installation> 
 
-	--container_version <docker container version of BUSCO> Default is cv1
+	--container_version				STR			<Docker container version of BUSCO> [DEFAULT is cv1]
 
-	--docker_host_path < full host folder path - needed for docker-based BUSCO installation>
+	--docker_host_path				STR			<Full host folder path <needed for docker-based BUSCO installation>
 
-	--docker_container_path < full mount path in the docker container - needed for docker-based BUSCO installation>
+	--docker_container_path			STR			<Full mount path in the docker container> <needed for docker-based BUSCO installation>
 
-	--score <auto for automatic threshold finding and <float number between 0 and 1> for manual threshold finding for segregating singletons and duplicates> DEFAULT is auto
+	--score							STR | FLOAT	auto | float number between 0 and 1	<DEFAULT is auto <for automatic threshold finding and for manual threshold finding for segregating singletons and duplicates> 
 
-	--self_simcut <float similarity percentage to remove self alignment hits with low similarity percentage> Default is 50.0
+	--self_simcut					FLOAT		<Similarity percentage to remove self alignment hits with low similarity percentage> [DEFAULT is 50.0]
 
-	--hits <number of top hits to be considered for finding suitable orthologs in the reference organism> Default is 10
+    --hits							INT			<Number of top hits to be considered for finding suitable orthologs in the reference organism> [DEFAULT is 10]
 
-	--ortho_candidates <user specified integer value for listing the potential ortholog candidates for low confidence ortholog cases> Default is 3
+	--ortho_candidates				INT			<User specified integer value for listing the potential ortholog candidates> [DEFAULT is 3]
 
-	--occupancy <float number cutoff for MAFFT aligned file trimming> Default is 0.1
+	--occupancy						FLOAT		<Occupancy cutoff for MAFFT aligned file trimming> [DEFAULT is 0.1]
 
-	--scoreratio < float ratio of forward alignment bit score and self alignment bit score of query to assess if the forward hit is valid> Default is 0.3
+    --scoreratio					FLOAT		<Ratio of forward alignment bit score and self alignment bit score of query to assess if the forward hit is valid> [DEFAULT is 0.3]
 
-	--fwd_simcut < float similarity percentage to remove forward alignment hits with low similarity percentage> Default is 40.0
+	--fwd_simcut					FLOAT		<Similarity percentage to remove forward alignment hits with low similarity percentage> [DEFAULT is 40.0]
 
-	--cores <number of cores needed to run Dupylicate analysis> DEFAULT is 4
+    --cores							INT			<Number of cores needed to run Dupylicate analysis> [DEFAULT is 4]
 
-	--proximity <integer value for the number of intervening genes to detect proximal duplications> DEFAULT is 10
+	--proximity						INT			<Value for the number of intervening genes to detect proximal duplications> [DEFAULT is 10]
 
-	--synteny_score <float value which is used as a cut-off or threshold for synteny analysis> DEFAULT is 0.5
+    --synteny_score					FLOAT		<Value which is used as a cut-off or threshold for synteny analysis> [DEFAULT is 0.5]
 
-	--flank <integer value specifying the number of flanking genes to be considered to determine the synteny window size in synteny analysis>
+	--flank							INT			<Value specifying the number of flanking genes to be considered to determine the synteny window size in synteny analysis> [DEFAULT is 5]
 
-	--side <integer value for synteny support from either side of a flanking region of a synteny window>
+	--side							INT			<Value for synteny support from either side of a flanking region of a synteny window> [DEFAULT is 1]
 
-	--ka_ks <yes | no to calculate ka, ks values> DEFAULT is 'no'
+	--ka_ks							STR			yes | no	<To calculate ka, ks values> [DEFAULT is no]
 
-	--ka_ks_method < MYN | NG methods for Ka/Ks ratio caclulation> Default is NG
+	--ka_ks_method					STR			MYN | NG	<Methods for Ka/Ks ratio caclulation> [Default is NG]
 
-	--duplicates_analysis <yes | no for further statistical analysis of identified gene duplicates> DEFAULT is no
+	--duplicates_analysis			STR			yes | no	<For further statistical analysis of identified gene duplicates> [DEFAULT is no]
 
-	--specific_duplicates_analysis <yes | no for further statistical analysis of specified ref genes' gene duplicates> DEFAULT is no
+	--specific_duplicates_analysis	STR			yes | no	<For further statistical analysis of specified ref genes' gene duplicates> [DEFAULT is no]
 
-	--dpi <resolution value desired for plots low | moderate | high | very high > DEFAULT is moderate
+	--dpi							STR			low | moderate | high | very high	<Resolution level desired for plots> [DEFAULT is moderate]
 
-	--analyse_disperse_duplicates <yes | no for statistical analysis of dispersed gene duplicates> DEFAULT is no
+	--analyse_disperse_duplicates	STR			yes | no	<For statistical analysis of dispersed gene duplicates> [DEFAULT is no]
 
-	--exp <full path to the folder with expression counts files>
+	--exp							STR			<Full path to the folder with expression counts files>
 
-	--avg_exp_cut < float value cutoff for average expression value across samples for classifying a gene as pseudogene based on gene expression> Default is 1
+	--avg_exp_cut					FLOAT		<Value cutoff for average expression value across samples> <for classifying a gene as pseudogene based on gene expression ; Default is 1
 
-	--genes <integer value referring to the number of genes to be taken for random pairing to determine threshold 
-		value for assessing functional divergence of gene duplicates based on gene expression values> DEFAULT is 10000
+	--genes							INT			<Value referring to the number of genes to be taken for random pairing> [DEFAULT is 10000] 
 
-	--specific_genes <user given list of specific genes from the reference with one transcript name per line, for analysing gene duplication outputs>
+	--specific_genes				STR			<Full path to TXT file> <user given list of specific genes from the reference with one transcript name per line, for analysing gene duplication outputs>
 
-	--clean up <yes | no cleans up intermediate files/ folders> DEFAULT is YES
+	--clean up						STR			yes | no	<Cleans up intermediate files/ folders> [DEFAULT is YES]
 
 ALLOWED FILE EXTENSIONS:
 
