@@ -221,7 +221,7 @@ ALLOWED FILE EXTENSIONS:
 	'.genome.fasta', '.genome.fa', '.genome.fasta.gz', '.genome.fa.gz', '.genome.fna',
 	'.genome.fna.gz','.cds.fa', '.cds.fasta','.cds.fa.gz', '.cds.fasta.gz', '.cds.fna',
 	'.cds.fna.gz','.pep.fa','.pep.fa.gz','.pep.fasta','.pep.fasta.gz', '.pep.fna',
-	'.pep.fna.gz','.tsv','.TXT','.TXT.gz','.tpms.TXT','.tpms.TXT.gz'>
+	'.pep.fna.gz','.tsv','.txt','.txt.gz','.tpms.txt','.tpms.txt.gz'>
 
 ```
 
