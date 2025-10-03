@@ -589,7 +589,7 @@ The ortholog confidence is denoted in the last column. In case of low confidence
 <div align="justify">
 	
 - The script is designed in such a way that it can start from the point, an analysis was stopped or interrupted. But if the output files of the previous steps are truncated or empty,
-  this will not be captured and may cause errors downstream. It is safe to remove the output files of the step that was interrupted while retaining the files generated in the earlier steps to facilitate a seamless run despite interruptions
+  this will not be captured and may cause errors downstream. It is safe to remove the output files of the step that was interrupted while retaining the files generated in the earlier steps to facilitate a seamless run despite interruptions; If you want to rerun the script with expression analysis involved, it is recommended to delete the result folders of the previous run's expression analysis, since the expression analysis involves a unique naming methodology that could reproduce the same result folders from the previous run with a different group number appended to the folder
   
 </div>
 
