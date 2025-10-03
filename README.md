@@ -112,105 +112,107 @@ Usage:
 
 MANDATORY:
 
-	--gff 							STR			Full path to folder containing GFF files
+	--gff 									STR			Full path to folder containing GFF files
 
 	Choose one of FASTA/PEP/CDS
 
-	[--fasta						STR			Full path to folder containing WGS FASTA files
+	[--fasta								STR			Full path to folder containing WGS FASTA files
 
-    --cds							STR			Full path to folder containing CDS FASTA files
+    --cds									STR			Full path to folder containing CDS FASTA files
 
-    --pep							STR			Full path to folder containing PEP files]
+    --pep									STR			Full path to folder containing PEP files]
 
     Output directory
 
-	--out							STR			full path to output folder
+	--out									STR			full path to output folder
 
 OPTIONAL:
 
-	--ref							STR			Name of the organism to be taken as reference [Default is NA and the script runs in reference-free mode]
+	--ref									STR			Name of the organism to be taken as reference [Default is NA and the script runs in reference-free mode]
 
-	--prokaryote					STR			Use the flag if the organisms for analysis are prokaryotes
+	--prokaryote							STR			Use the flag if the organisms for analysis are prokaryotes
 
-	--pseudos_gff					STR			yes | no Optional inclusion or exclusion of pseudogenes with coding features in the GFF file [DEFAULT is no]
+	--pseudos_gff							STR			yes | no Optional inclusion or exclusion of pseudogenes with coding features in the GFF file [DEFAULT is no]
 
-	--gff_config					STR			Full path to TXT file containing the gff parameters
+	--gff_config							STR			Full path to TXT file containing the gff parameters
 
-	--mode							STR			overlap | strict [DEFAULT is overlap] 
+	--mode									STR			overlap | strict [DEFAULT is overlap] 
 
-	--to_annotate					STR			Full path to TXT file 
+	--to_annotate							STR			Full path to TXT file 
 
-	--seq_aligner					STR			blast | diamond | mmseqs2 [DEFAULT is diamond]
+	--seq_aligner							STR			blast | diamond | mmseqs2 [DEFAULT is diamond]
 
-	--blast							STR			Full path to BLAST if not already in your PATH environment variable
+	--blast									STR			Full path to BLAST if not already in your PATH environment variable
 
-	--diamond						STR			Full path to diamond if not already in your PATH environment variable
+	--diamond								STR			Full path to diamond if not already in your PATH environment variable
 
-	--mmseqs						STR			Full path to mmseqs2 if not already in your PATH environment variable
+	--mmseqs								STR			Full path to mmseqs2 if not already in your PATH environment variable
 
-	--mafft							STR			Full path to MAFFT if not already in your PATH environment variable
+	--mafft									STR			Full path to MAFFT if not already in your PATH environment variable
 
-	--evalue						FLOAT		evalue for alignment [DEFAULT is 1e-5]
+	--evalue								FLOAT		evalue for alignment [DEFAULT is 1e-5]
 
-	--gemoma						STR			Full path to GeMoMa if not already in your PATH environment variable
+	--gemoma								STR			Full path to GeMoMa if not already in your PATH environment variable
 
-	--qc							STR			yes | no Quality check with BUSCO [DEFAULT is no]
+	--qc									STR			yes | no Quality check with BUSCO [DEFAULT is no]
 
-	--busco							STR			Full path to BUSCO | busco_docker [DEFAULT is busco]
+	--busco									STR			Full path to BUSCO | busco_docker [DEFAULT is busco]
 
-	--busco_version					STR			BUSCO version in the format vx.x.x> [DEFAULT is v5.8.2]  
+	--busco_version							STR			BUSCO version in the format vx.x.x> [DEFAULT is v5.8.2]  
 
-	--container_version				STR			Docker container version of BUSCO [DEFAULT is cv1]
+	--container_version						STR			Docker container version of BUSCO [DEFAULT is cv1]
 
-	--docker_host_path				STR			Full host folder path 
+	--docker_host_path						STR			Full host folder path 
 
-	--docker_container_path			STR			Full mount path in the docker container
+	--docker_container_path					STR			Full mount path in the docker container
 
-	--score							STR | FLOAT	auto | float  number between 0 and 1 [DEFAULT is auto]
+	--score									STR | FLOAT	auto | float  number between 0 and 1 [DEFAULT is auto]
 
-	--self_simcut					FLOAT		Similarity percentage to remove self alignment hits with low similarity percentage [DEFAULT is 50.0]
+	--self_simcut							FLOAT		Similarity percentage to remove self alignment hits with low similarity percentage [DEFAULT is 50.0]
 
-    --hits							INT			Number of top hits to be considered for finding suitable orthologs in the reference organism [DEFAULT is 10]
+    --hits									INT			Number of top hits to be considered for finding suitable orthologs in the reference organism [DEFAULT is 10]
 
-	--ortho_candidates				INT			User specified integer value for listing the potential ortholog candidates [DEFAULT is 3]
+	--ortho_candidates						INT			User specified integer value for listing the potential ortholog candidates [DEFAULT is 3]
 
-	--occupancy						FLOAT		Occupancy cutoff for MAFFT aligned file trimming [DEFAULT is 0.1]
+	--occupancy								FLOAT		Occupancy cutoff for MAFFT aligned file trimming [DEFAULT is 0.1]
 
-    --scoreratio					FLOAT		Ratio of forward alignment bit score and self alignment bit score of query to assess if the forward hit is valid [DEFAULT is 0.3]
+    --scoreratio							FLOAT		Ratio of forward alignment bit score and self alignment bit score of query to assess if the forward hit is valid [DEFAULT is 0.3]
 
-	--fwd_simcut					FLOAT		Similarity percentage to remove forward alignment hits with low similarity percentage [DEFAULT is 40.0]
+	--fwd_simcut							FLOAT		Similarity percentage to remove forward alignment hits with low similarity percentage [DEFAULT is 40.0]
 
-    --cores							INT			Number of cores needed to run Dupylicate analysis [DEFAULT is 4]
+    --cores									INT			Number of cores needed to run Dupylicate analysis [DEFAULT is 4]
 
-	--proximity						INT			Value for the number of intervening genes to detect proximal duplications [DEFAULT is 10]
+	--proximity								INT			Value for the number of intervening genes to detect proximal duplications [DEFAULT is 10]
 
-    --synteny_score					FLOAT		Value which is used as a cut-off or threshold for synteny analysis [DEFAULT is 0.5]
+    --synteny_score							FLOAT		Value which is used as a cut-off or threshold for synteny analysis [DEFAULT is 0.5]
 
-	--flank							INT			Value specifying the number of flanking genes to be considered to determine the synteny window size in synteny analysis [DEFAULT is 5]
+	--flank									INT			Value specifying the number of flanking genes to be considered to determine the synteny window size in synteny analysis [DEFAULT is 5]
 
-	--side							INT			Value for synteny support from either side of a flanking region of a synteny window [DEFAULT is 1]
+	--side									INT			Value for synteny support from either side of a flanking region of a synteny window [DEFAULT is 1]
 
-	--ka_ks							STR			yes | no  To calculate ka, ks values [DEFAULT is no]
+	--ka_ks									STR			yes | no  To calculate ka, ks values [DEFAULT is no]
 
-	--ka_ks_method					STR			MYN | NG  Methods for Ka/Ks ratio caclulation [Default is NG]
+	--ka_ks_method							STR			MYN | NG  Methods for Ka/Ks ratio caclulation [Default is NG]
 
-	--duplicates_analysis			STR			yes | no  For further statistical analysis of identified gene duplicates [DEFAULT is no]
+	--duplicates_analysis					STR			yes | no  For further statistical analysis of identified gene duplicates [DEFAULT is no]
 
-	--specific_duplicates_analysis	STR			yes | no  For further statistical analysis of specified ref genes' gene duplicates> [DEFAULT is no]
+	--specific_duplicates_analysis			STR			yes | no  For further statistical analysis of specified ref genes' gene duplicates> [DEFAULT is no]
 
-	--dpi							STR			low | moderate | high | very high  Resolution level desired for plots [DEFAULT is moderate]
+	--ref_free_specific_duplicates_analysis	STR			Full path to TXT file containing the names of genes whose expression analysis is to be done in the absence of a reference 
 
-	--analyse_disperse_duplicates	STR			yes | no  For statistical analysis of dispersed gene duplicates [DEFAULT is no]
+	--dpi									STR			low | moderate | high | very high  Resolution level desired for plots [DEFAULT is moderate]
 
-	--exp							STR			Full path to the folder with expression counts files
+	--analyse_disperse_duplicates			STR			yes | no  For statistical analysis of dispersed gene duplicates [DEFAULT is no]
 
-	--avg_exp_cut					FLOAT		Value cutoff for average expression value across samples [Default is 1]
+	--exp									STR			Full path to the folder with expression counts files
 
-	--genes							INT			Value referring to the number of genes to be taken for random pairing [DEFAULT is 10000] 
+	--avg_exp_cut							FLOAT		Value cutoff for average expression value across samples [Default is 1]
 
-	--specific_genes				STR			Full path to TXT file 
+	--genes									INT			Value referring to the number of genes to be taken for random pairing [DEFAULT is 10000] 
 
-	--clean up						STR			yes | no  Cleans up intermediate files and folders [DEFAULT is yes]
+	--specific_genes						STR			Full path to TXT file 
+
+	--clean up								STR			yes | no  Cleans up intermediate files and folders [DEFAULT is yes]
 
 ALLOWED FILE EXTENSIONS:
 
@@ -218,7 +220,7 @@ ALLOWED FILE EXTENSIONS:
 	'.genome.fasta', '.genome.fa', '.genome.fasta.gz', '.genome.fa.gz', '.genome.fna',
 	'.genome.fna.gz','.cds.fa', '.cds.fasta','.cds.fa.gz', '.cds.fasta.gz', '.cds.fna',
 	'.cds.fna.gz','.pep.fa','.pep.fa.gz','.pep.fasta','.pep.fasta.gz', '.pep.fna',
-	'.pep.fna.gz','.tsv','.txt','.txt.gz','.tpms.txt','.tpms.txt.gz'>
+	'.pep.fna.gz','.tsv','.TXT','.TXT.gz','.tpms.TXT','.tpms.TXT.gz'>
 
 ```
 
@@ -227,7 +229,7 @@ ALLOWED FILE EXTENSIONS:
 `--mode` In the overlap mode genes repeat among the different duplicates classification. In the strict mode there is no gene repetition and you have a new classification group called mixed 
 		duplicates containing the related connected components from the other three duplicate classes
 
-`--to_annotate` This needs the path to a txt file. The txt file must contain names of queries and the corresponding reference organism for GeMoMa annotation separated by comma - Query,Reference -> one pair per line
+`--to_annotate` This needs the path to a TXT file. The TXT file must contain names of queries and the corresponding reference organism for GeMoMa annotation separated by comma - Query,Reference -> one pair per line
 
 `--gemoma` The full path to GeMoMa must also include the name of the GeMoMa jar file
 
@@ -245,12 +247,18 @@ ALLOWED FILE EXTENSIONS:
 
 `--genes` This flag's parameter gives the number of genes to be considered for random gene pairing to identify a correlation threshold that can be used to assess functional divergence of gene duplicates based on gene expression values
 
-`--specific_genes` The txt file pointed by this flag must contain a user given list of specific genes from the reference with one transcript name per line, for analysing gene duplication outputs
+`--specific_genes` The TXT file pointed by this flag must contain a user given list of specific genes from the reference with one transcript name per line, for analysing gene duplication outputs
 
+`--ref_free_specific_duplicates_analysis` This flag can be used for analysing expression of gene duplicates in the sample when a reference is not given
+
+<div align="justify">
+	
+**IMPORTANT**: The difference between the `--specific_duplicates_analysis` and the `--ref_free_specific_duplicates_analysis` flags is that the former needs specification of yes or no and the genes must be specified in a separate TXT file whose path must be given with the `--specific_genes` flag. The genes specified must be genes in the reference organism, and this option will help perform expression analysis of the orthologs of the specified reference genes if they belong to a gene duplicates group in the sample. These two flags can be used only in the presence of a reference organism. On the other hand the `--ref_free_specific_duplicates_analysis` is a single flag needing the full path to the TXT file with the genes in the sample organism whose expression analysis needs to be done and can be used with or without reference as it is only sample organism dependent
+</div>
 
 ### GFF fields config file preparation instructions for Dupylicate.py:
 	
- 1) This is a simple .txt file containing the gff parameters in different columns
+ 1) This is a simple .TXT file containing the gff parameters in different columns
 
  2) The columns can be separated by tabs or spaces
 
@@ -307,6 +315,8 @@ Understanding the GFF config file:
 - **IMPORTANT:** It is important to note that the child-parent linker and the parent must be chosen in such a way that they point to the same text. For example,
   both the child-parent linker and the parent attribute in the above example point to AT1G01010.Araport11.447; This is important to ensure that the transcripts
   correctly map to the parent gene especially in the alternate transcript removal step
+
+  Additionally when including a gene expression counts file for expression analysis, the gene names in the first column of the counts file must match with text pointed by the child attribute or the parent attribute. If not, cleaned expression file will not be written and expression analysis will not be possible.
 </div>
 
 ### Preparing list of reference genes for specific analysis
@@ -314,15 +324,15 @@ Understanding the GFF config file:
 1) If you have a known list of genes in the reference organism whose copy number variation you want to analyze in the sample,
    the --specific_genes flag can be used. 
 
-2) This needs the full path to a simple .txt file
+2) This needs the full path to a simple .TXT file
 
-3) This .txt file should have one transcript name per line
+3) This .TXT file should have one transcript name per line
 
-### Preparing the txt file for GeMoMa annotation
+### Preparing the TXT file for GeMoMa annotation
 
 1) In case, some of your input files lack structural annotation, the --to_annotate flag in the script can be used
 
-2) This needs the full path to a simple .txt file
+2) This needs the full path to a simple .TXT file
 
 3) The name of the organism to be annotated followed by comma and the name of the reference organism to
    be used for annotation must be mentioned in a line
@@ -375,7 +385,7 @@ OPTIONAL:
 
 ### Config file preparation instructions for Fasta_fix.py:
 
-1. The config file is a simple .txt file
+1. The config file is a simple .TXT file
 
 2. Specify the organism name i.e. the base name without the extension of your file in the first column
 
@@ -552,9 +562,11 @@ The ortholog confidence is denoted in the last column. In case of low confidence
   divergent expression threshold, and TXT file of perceived pseudogenes (genes that have low expression across the different RNASeq samples used for generating the counts table file) in that organism;
   
   &nbsp;It is important to note that some gene duplicate groups can have statistics folder present, but might not have corresponding plots folder due to the possibility of all or most of them being perceived pseudogenes,
-  disabling their correlation analysis and gene expression plotting
+  disabling their correlation analysis and gene expression plotting; The stats.tsv file for each duplicate group lists the iterative gene pairs analyzed in a duplicate group, the Bonferroni corrected p-value for every pair, the Spearman correlation value and finally the strength of correlation or expression divergence.
 
 - **Specific_duplicates_analysis**: Folder similar to the Duplicates_analysis folder, except that contains the respective output folders, and files for specific gene duplicates
+
+- **Specific_ref_free_duplicates_analysis**: Folder similar to the Duplicates_analysis folder, except that contains the respective output folders, and files for specified genes if presen as duplicates in the sample organism
 
 ## Common error prone steps and some recommendations
 
@@ -562,7 +574,7 @@ The ortholog confidence is denoted in the last column. In case of low confidence
 
 - Please ensure that the files have the allowed extensions as listed above in the main script usage
 
-- The base names of the files excluding the extensions must be the same across all input files, the config files, and the annotation txt file for GeMoMa annotation
+- The base names of the files excluding the extensions must be the same across all input files, the config files, and the annotation TXT file for GeMoMa annotation
 
 - Gene duplications classification needs the GFF file(s) as the inputs. Since GFF files have wide varying formats, the analysis can be interrupted at the validation step due to GFF file formatting issues
 
