@@ -1,0 +1,30 @@
+name: dupylicate_v1.0
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  # Core Python
+  - python=3.12.7
+  
+  # Python libraries
+  - pandas
+  - numpy
+  - scipy
+  - matplotlib
+  - seaborn
+  - dendropy
+  - scikit-learn
+  - tqdm   # optional
+  - jinja2
+  
+  # External tools
+  - blast
+  - mmseqs2
+  - diamond
+  - mafft
+  - fasttree
+  - gemoma
+  - busco
+  - agat
+
