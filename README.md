@@ -108,6 +108,20 @@ It is recommended to run the docker image as a user and not root:
           The dependencies are built-in in the docker image and that makes it simple to use the tool across systems without the 
 		  need for local installations.
 
+### (3) Installation in a conda environment
+
+This method of installation installs all the dependencies in a conda environment using the environment.yml file in this repository
+
+```
+git clone https://github.com/ShakNat/DupyliCate
+
+cd DupyliCate
+
+conda env create -f environment.yml
+
+conda activate dupylicate_v1.0
+
+```
 
 ## Running the script
 
