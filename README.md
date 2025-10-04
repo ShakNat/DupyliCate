@@ -615,7 +615,7 @@ The ortholog confidence is denoted in the last column. In case of low confidence
   
 </div>
 
-## Third party tool references
+## Third party tool references and dataset references
 
 - Altschul, S.F., Gish, W., Miller, W., Myers, E.W., Lipman, D.J. (1990) “Basic local alignment search tool.” J. Mol. Biol. 215:403-410. PubMed
 
@@ -635,6 +635,10 @@ The ortholog confidence is denoted in the last column. In case of low confidence
 - Fredrik Tegenfeldt, Dmitry Kuznetsov, Mosè Manni, Matthew Berkeley, Evgeny M Zdobnov, Evgenia V Kriventseva, OrthoDB and BUSCO update: annotation of orthologs with wider sampling of genomes, Nucleic Acids Research, Volume 53, Issue D1, 6 January 2025, Pages D516–D522, https://doi.org/10.1093/nar/gkae987
 
 - Jeet Sukumaran, Mark T. Holder, DendroPy: a Python library for phylogenetic computing, Bioinformatics, Volume 26, Issue 12, June 2010, Pages 1569–1571, https://doi.org/10.1093/bioinformatics/btq228
+
+- Cheng, Chia-Yi, Vivek Krishnakumar, Agnes P. Chan, Françoise Thibaud-Nissen, Seth Schobel, and Christopher D. Town. 2017. “Araport11: A Complete Reannotation of the Arabidopsis Thaliana Reference Genome.” The Plant Journal 89(4):789–804. doi:10.1111/tpj.13415.
+
+- Pucker B, Holtgräwe D, Stadermann KB, Frey K, Huettel B, Reinhardt R, et al. (2019) A chromosome-level sequence assembly reveals the structure of the Arabidopsis thaliana Nd-1 genome and its gene set. PLoS ONE 14(5): e0216233. https://doi.org/10.1371/journal.pone.0216233
 
 
 ## When using DupyliCate in your research please cite
