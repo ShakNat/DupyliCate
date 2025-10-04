@@ -77,13 +77,13 @@ DupyliCate also facilitates optional gene expression analysis of gene duplicates
 
 ### (1) Manual installation
 
-Clone this repository
+Clone this repository git clone https://github.com/ShakNat/DupyliCate
 
 **Mandatory dependencies:**
 
 - **Tools**: BLAST, DIAMOND, MMSeqs2 (latest versions preferred)
 
-- **Python libraries**: pandas (v2.3.1 or greater), numpy (v2.3.2 or greater), seaborn (v0.13.2 or greater), matplotlib (v3.10.5 or greater), scipy (v1.16.1 or greater)
+- **Python libraries**: pandas (v2.3.1 or greater), numpy (v2.3.2 or greater), seaborn (v0.13.2 or greater), matplotlib (v3.10.5 or greater), scipy (v1.16.1 or greater), jinja2 (3.1.6), openpyxl (3.1.2 or greater)
 
 **Optional dependencies:**
 
@@ -93,8 +93,16 @@ Clone this repository
 
 ### (2) Docker installation
 
+```
+docker pull shakunthalan/dupylicate_v1.0:latest
+```
 
+It is recommended to run the docker image as a user and not root:
 
+```
+ docker run -u $(id -u) -v /path/to/data:/data shakunthalan/dupylicate_v1.0:latest
+
+```
 
 **Note:** If you are using a docker image of the tool, you need not specify the dependencies' full paths while running the tool; 
           The dependencies are built-in in the docker image and that makes it simple to use the tool across systems without the 
