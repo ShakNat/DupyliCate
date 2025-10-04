@@ -235,7 +235,7 @@ OPTIONAL:
 
 	--specific_genes						STR			Full path to TXT file 
 
-	--clean up								STR			yes | no  Cleans up intermediate files and folders [DEFAULT is yes]
+	--clean_up								STR			yes | no  Cleans up intermediate files and folders [DEFAULT is yes]
 
 ALLOWED FILE EXTENSIONS:
 
@@ -592,6 +592,10 @@ The ortholog confidence is denoted in the last column. In case of low confidence
 - **Specific_ref_free_duplicates_analysis**: Folder similar to the Duplicates_analysis folder, except that contains the respective output folders, and files for specified genes if presen as duplicates in the sample organism
 
 ## Common error prone steps and some recommendations
+
+- The errors and warnings output by DupyliCate are stored in the Tmp folder created within the output folder you specify /output_folder/Tmp/Errors_warnings
+
+- By defualt if the run completes successfully, the Tmp folder is removed automatically; If you want to retain the intermediate files specify no in the `--clean_up` flag
 
 - Please remember to add / at the end of the folder path when giving a folder of input files to DupyliCate
 
