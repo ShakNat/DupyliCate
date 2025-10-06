@@ -77,7 +77,9 @@ DupyliCate also facilitates optional gene expression analysis of gene duplicates
 
 ### (1) Manual installation
 
-Clone this repository git clone https://github.com/ShakNat/DupyliCate
+Clone this repository 
+
+`git clone https://github.com/ShakNat/DupyliCate`
 
 **Mandatory dependencies:**
 
