@@ -1,0 +1,157 @@
+#commands used to run DupGen_finder
+
+time makeblastdb -in /vol/bigdata/datasets/Dupgenfinder_input_data/AthCol0_noalttrans.pep.fasta -dbtype prot -parse_seqids -out /vol/bigdata/datasets/Dupgenfinder_input_data/col0db/AthCol0
+
+time makeblastdb -in /vol/bigdata/datasets/Dupgenfinder_input_data/AthNd1_noalttrans.pep.fasta -dbtype prot -parse_seqids -out /vol/bigdata/datasets/Dupgenfinder_input_data/nd1db/AthNd1
+
+time blastp -query /vol/bigdata/datasets/Dupgenfinder_input_data/AthCol0_noalttrans.pep.fasta -db /vol/bigdata/datasets/Dupgenfinder_input_data/col0db/AthCol0 -evalue 1e-5 -max_target_seqs 5 -out /vol/bigdata/datasets/Dupgenfinder_input_data/AthCol0.blast -outfmt 6 -num_threads 15
+
+time blastp -query /vol/bigdata/datasets/Dupgenfinder_input_data/AthCol0_noalttrans.pep.fasta -db /vol/bigdata/datasets/Dupgenfinder_input_data/nd1db/AthNd1 -evalue 1e-5 -max_target_seqs 5 -out /vol/bigdata/datasets/Dupgenfinder_input_data/AthCol0_AthNd1.blast -outfmt 6 -num_threads 15
+
+time DupGen_finder.pl -i /vol/bigdata/datasets/Dupgenfinder_input_data -t AthCol0 -c AthNd1 -o /vol/bigdata/results/Dupgenfinder_Results
+
+time DupGen_finder-unique.pl -i /vol/bigdata/datasets/Dupgenfinder_input_data -t AthCol0 -c AthNd1 -o /vol/bigdata/results/Dupgenfinder_Results_unique
+
+#commands used to run doubletrouble
+
+#Import data to the R session
+##Read .fa files with proteomes as a list of AAStringSet + clean names
+
+system.time({
+Ath_seq <- syntenet::fasta2AAStringSetlist('/vol/bigdata/datasets/doubletrouble_inputs/fasta')
+names(Ath_seq) <- gsub("\\..*", "", names(Ath_seq))
+})
+
+###Read .gff3 files as a list of GRanges
+
+system.time({
+annot <- syntenet::gff2GRangesList('/vol/bigdata/datasets/doubletrouble_inputs/annot')
+names(annot) <- gsub("\\..*", "", names(annot))
+})
+
+#Process data
+##Keep ranges for protein-coding genes only
+#modified R code according to the structure of the GFF file
+#Process data for the first GFF file which now has biotype field
+
+system.time({
+Ath_annot <- lapply(annot, function(x) {
+#Extract protein-coding genes
+gene_ranges <- x[x$biotype == "protein_coding" & x$type == "gene"]
+#Subset features that overlap with protein-coding genes
+gene_ranges <- IRanges::subsetByOverlaps(x, gene_ranges)
+#Add gene_id column which is required by process_input
+#For Arabidopsis, use the ID field as gene_id
+gene_ranges$gene_id <- gene_ranges$ID
+#Return the filtered ranges
+return(gene_ranges)
+})
+})
+
+library(syntenet)
+
+#Process input data
+system.time({
+pdata <- process_input(Ath_seq, Ath_annot)
+})
+
+#exporting sequences for BLAST
+system.time({
+my_seq_list <- list(AthCol0 = Ath_seq)
+})
+
+
+#Export sequences to FASTA file
+#Use Ath_seq directly, as it's already a list of AAStringSet objects
+
+system.time({
+output_paths <- export_sequences(seq = Ath_seq, outdir = '/vol/bigdata/datasets/doubletrouble_inputs')
+})
+
+#BLAST commands
+
+time makeblastdb -in /vol/bigdata/datasets/doubletrouble_inputs/AthCol0.fasta -dbtype prot -parse_seqids -out /vol/bigdata/datasets/doubletrouble_inputs/col0db/AthCol0
+
+time blastp -query /vol/bigdata/datasets/doubletrouble_inputs/AthCol0.fasta -db /vol/bigdata/datasets/doubletrouble_inputs/col0db/AthCol0 -evalue 1e-5 -max_target_seqs 5 -out /vol/bigdata/datasets/doubletrouble_inputs/AthCol0.tsv -outfmt 6 -num_threads 15
+
+#extra steps needed for processing BLAST results accordito the classify gene pairs function code:
+#modifying the blast output by adding Ath_ to the gene names
+
+awk 'BEGIN{FS=OFS="\t"} {$1=gensub(/^AT/, "Ath_AT", 1, $1); $2=gensub(/^AT/, "Ath_AT", 1, $2); print}' AthCol0_unprocessed.tsv > AthCol0.tsv
+
+#Read BLAST results back into R
+
+system.time({
+blast_results_new <- read_diamond(diamond_dir = '/vol/bigdata/datasets/doubletrouble_inputs/doubletrouble_blast')
+})
+
+#Create a properly formatted blast_list
+
+blast_list <- list()
+
+#Extract the data frame and add it with the correct name format
+
+blast_df <- blast_results_new$AthCol0
+
+#The function expects species names in the format "speciesA_speciesA"
+#For self-comparison (within AthCol0)
+
+blast_list["AthCol0_AthCol0"] <- list(blast_df)
+
+#running doubletrouble in the standard mode
+#Standard scheme
+
+system.time({
+c_standard <- classify_gene_pairs(
+annotation = pdata$annotation,
+blast_list = blast_list,
+scheme = "standard"
+)
+})
+
+#Inspecting the output
+names(c_standard)
+head(c_standard$AthCol0)
+table(c_standard$AthCol0$type)
+
+#Classify genes into unique modes of duplication
+
+system.time({
+c_unique_genes <- classify_genes(c_standard)
+})
+
+#Inspecting the output
+names(c_unique_genes)
+#> [1] "AthCol0"
+head(c_unique_genes$AthCol0)
+#Number of genes per mode
+table(c_unique_genes$AthCol0$type)
+
+#extracting doubletrouble's outputs into tsv files for further processing
+
+system.time({
+write.table(c_standard$AthCol0,
+file = "/vol/bigdata/results/doubletrouble_results/AthCol0_dups_standard.tsv",
+sep = "\t",
+row.names = FALSE,
+quote = FALSE)
+})
+
+system.time({
+write.table(c_unique_genes$AthCol0,
+file = "/vol/bigdata/results/doubletrouble_results/AthCol0_dups_standard_unique.tsv",
+sep = "\t",
+row.names = FALSE,
+quote = FALSE)
+})
+
+# Commands used to run DupyliCate
+
+#### AthCol-0 run for benchmarking analysis and also PoC for BLAST with BUSCO thresholding - runtime 
+
+python3 dupylicate_v1.0.py --pep /vol/bigdata/results/Ath_pep/AthCol0.pep.fasta --gff /vol/bigdata/datasets/Ath_GFFs/AthCol0.gff --cores 15 --busco busco_docker --docker_host_path /vol/bigdata --docker_container_path /vol/bigdata --score auto --mode overlap --clean_up no --seq_aligner blast --out /vol/bigdata/results/Manuscript_data/Benchmarking_analysis_with_busco_AthCol-0
+
+#### AthCol-0 run for benchmarking analysis and also PoC for BLAST without BUSCO thresholding - runtime 
+
+python3 dupylicate_v1.0.py --pep /vol/bigdata/results/Ath_pep/AthCol0.pep.fasta --gff /vol/bigdata/datasets/Ath_GFFs/AthCol0.gff --cores 15 --busco busco_docker --docker_host_path /vol/bigdata --docker_container_path /vol/bigdata --score 0.0 --self_simcut 0 --mode overlap --clean_up no --seq_aligner blast --out /vol/bigdata/results/Manuscript_data/Benchmarking_analysis_without_busco_AthCol-0
+
