@@ -22,7 +22,8 @@ DupyliCate also facilitates optional gene expression analysis of gene duplicates
 </div>
 
 ## Workflow
-<img width="4638" height="5484" alt="Dupylicate_workflow_diagram" src="https://github.com/user-attachments/assets/a818ed9f-530f-4b54-bf4a-8cc0fa5f2ce7" />
+<img width="4638" height="5484" alt="Figure_8" src="https://github.com/user-attachments/assets/d6966b32-fc03-49dc-a000-67d23297b931" />
+
 
 <div align="justify">
 	
