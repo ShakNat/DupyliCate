@@ -1,7 +1,7 @@
 # Use Python 3.12.7 base image
 FROM python:3.12.7
 
-# Set environment variables
+# Set the environment variables
 ENV DEBIAN_FRONTEND=noninteractive \
     CONDA_DIR=/opt/conda \
     PATH="/tools/blast/bin:/tools/diamond:/tools/mmseqs/bin:/tools/fasttree:/tools/gemoma:$PATH" \
