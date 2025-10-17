@@ -1,0 +1,10 @@
+pandas>=2.3.1
+numpy>=2.3.2
+dendropy>=5.0.8
+seaborn>=0.13.2
+matplotlib>=3.10.5
+scipy>=1.16.1
+tqdm>=4.67.1
+scikit-learn>=1.7.1
+jinja2
+openpyxl>=3.1.2
