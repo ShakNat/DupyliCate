@@ -97,13 +97,13 @@ Clone this repository
 ### (2) Docker installation
 
 ```
-docker pull shakunthalan/dupylicate_v1.0:latest
+docker pull shakunthalan/dupylicate:latest
 ```
 
 It is recommended to run the docker image as a user and not root:
 
 ```
- docker run -u $(id -u) -v /path/to/data:/data shakunthalan/dupylicate_v1.0:latest
+ docker run -u $(id -u) -v /path/to/data:/data shakunthalan/dupylicate:latest
 
 ```
 
