@@ -1908,6 +1908,17 @@ def load_transcript_information_from_gff3( gff3_input_file,process_pseudos,child
 		mrna_dict = {}  # To store mRNA ID -> details mapping
 		exon_dict = {}  # To store exon parent -> list of exons mapping
 
+
+		with gzip.open(gff3_input_file, "rt") as f:
+			gff_lines = f.readlines()
+			has_mrna = any(line.split('\t')[2].upper() == 'MRNA' for line in gff_lines
+					if not line.startswith('#') and len(line.split('\t')) >= 3)
+			has_transcript = any(line.split('\t')[2].upper() == 'TRANSCRIPT' for line in gff_lines
+					if not line.startswith('#') and len(line.split('\t')) >= 3)
+			# checking if cds feature is present in the GFF file
+			has_cds = any(line.split('\t')[2].upper() == 'CDS' for line in gff_lines
+					if not line.startswith('#') and len(line.split('\t')) >= 3)
+
 		with gzip.open(gff3_input_file, "rt") as f:
 			gff_lines = f.readlines()
 			# collecting pseudogenes to skip cds of pseudogenes
