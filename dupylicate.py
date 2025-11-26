@@ -4210,7 +4210,16 @@ def clean_headers_for_busco(gene_id):
 	return safe_gene_id
 
 #function to run BUSCO
-def run_busco(orgname, fasta_file, busco_path, busco_dir, busco_dir_final, busco_threads_per_organism, org_type,host_cache_dir, busco_db_dir, busco_pickle_file,logger):
+def run_busco(orgname, fasta_file, busco_path, busco_dir, busco_dir_final, busco_threads_per_organism, org_type,host_cache_dir, busco_db_dir, busco_pickle_file,logger,buscolineage):
+	#code to extract lineages to use from busco lineage config file
+	buscolineage_dic={}
+	if buscolineage!='auto':
+		with open (buscolineage,'r')as f:
+			line=f.readline()
+			while line:
+				parts=line.strip().split()
+				buscolineage_dic[parts[0]]=parts[1].strip()
+				line=f.readline()
 	#code to create a temp protein fasta file to clean headers and use this clean protein file for busco analysis - this temp file will be deleted after the busco run completes
 	tmp_fasta = os.path.join(busco_dir, f"{orgname}_temp.pep.fasta")
 	try:
@@ -4223,9 +4232,26 @@ def run_busco(orgname, fasta_file, busco_path, busco_dir, busco_dir_final, busco
 				else:
 					outfile.write(line)
 		if org_type == 'eukaryote':
-			cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-euk -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+			if buscolineage=='auto':
+				cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-euk -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+			else:
+				if orgname in buscolineage_dic.keys():
+					lineage=buscolineage_dic[orgname]
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --l '+ lineage + ' -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+				else:
+					logger.warning(f"BUSCO lineage not specified for {orgname}. Reverting back to auto lineage detection.")
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-euk -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
 		elif org_type == 'prokaryote':
-			cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-prok -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+			if buscolineage=='auto':
+				cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-prok -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+			else:
+				if orgname in buscolineage_dic.keys():
+					lineage=buscolineage_dic[orgname]
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --l ' + lineage + ' -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+				else:
+					logger.warning(f"BUSCO lineage not specified for {orgname}. Reverting back to auto lineage detection.")
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-prok -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+
 		p = subprocess.Popen(args=cmd, shell=True)
 		p.communicate()
 	finally:
@@ -8688,6 +8714,12 @@ def main( arguments ):
 	else:
 		busco_path = 'busco'
 
+	# Option for user to specify BUSCO lineage per input organism
+	if '--busco_lineage' in arguments:
+		buscolineage=arguments[arguments.index('--busco_lineage')+1]
+	else:
+		buscolineage='auto'
+
 	if '--busco_version' in arguments:
 		busco_version = arguments[arguments.index('--busco_version')+1]
 	else:
@@ -9077,9 +9109,9 @@ def main( arguments ):
 					if not os.path.isfile(busco_pickle_file):
 						if orgname != ref_name:
 							if busco_path != 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger,buscolineage)
 							elif busco_path == 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger,buscolineage)
 				busco_dic_file_path = Path(busco_dic_dir)
 				busco_dic_file_list = list(busco_dic_file_path.iterdir())
 				with open(busco_qc_result, 'w') as out:
@@ -9297,9 +9329,9 @@ def main( arguments ):
 					if not os.path.isfile(busco_pickle_file):
 						if orgname != ref_name:
 							if busco_path != 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger,buscolineage)
 							elif busco_path == 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger,buscolineage)
 				busco_dic_file_path = Path(busco_dic_dir)
 				busco_dic_file_list = list(busco_dic_file_path.iterdir())
 				with open(busco_qc_result, 'w') as out:
@@ -9502,9 +9534,9 @@ def main( arguments ):
 					if not os.path.isfile(busco_pickle_file):
 						if orgname != ref_name:
 							if busco_path != 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger,buscolineage)
 							elif busco_path == 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger,buscolineage)
 				busco_dic_file_path = Path(busco_dic_dir)
 				busco_dic_file_list = list(busco_dic_file_path.iterdir())
 				with open(busco_qc_result, 'w') as out:
@@ -9714,9 +9746,9 @@ def main( arguments ):
 					if not os.path.isfile(busco_pickle_file):
 						if orgname != ref_name:
 							if busco_path != 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger,buscolineage)
 							elif busco_path == 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger,buscolineage)
 				busco_dic_file_path = Path(busco_dic_dir)
 				busco_dic_file_list = list(busco_dic_file_path.iterdir())
 				with open(busco_qc_result, 'w') as out:
