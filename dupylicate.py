@@ -39,6 +39,7 @@ __usage__ = """
 			--qc < yes | no for quality check with BUSCO> Default is no
 			--busco  <full path to BUSCO or choose 'busco_docker' for docker-based BUSCO installation> Default is 'busco'
 			--busco_version <BUSCO version in the format vx.x.x - needed only if you have docker-based BUSCO installation> Default is v6.0.0
+			--busco_lineage <full path to tab separated config file where the first column is sample organism name and the second column is busco lineage>
 			--container_version <docker container version of BUSCO> Default is cv1
 			--docker_host_path < full host folder path - needed for docker-based BUSCO installation>
 			--docker_container_path < full mount path in the docker container - needed for docker-based BUSCO installation>
@@ -159,6 +160,7 @@ Defaults = {
 	'qc': 'no',
 	'busco': 'NA',
 	'busco_version': 'NA',
+	'busco_lineage':'auto',
 	'container_version':'NA',
 	'docker_host_path': 'NA',
 	'docker_container_path': 'NA',
