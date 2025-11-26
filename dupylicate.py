@@ -7413,7 +7413,7 @@ def ref_anchor_finder_output_writer_dispersed_mixed(fwd_best_hits_dic, orthologs
 	return low_confidence, moderate_confidence, high_confidence
 
 #functions to parallelize the gene duplicates identification, classification, ka/ks analysis, singletons and output writing steps
-def identify_classify_duplicates_singletons(self_pairs_set,component,pos_dic_query,proximity,self_dic,orgname,each,no_alt_trans_dir,evo_analysis,files,pos_dic_ref, pos_nos_query, coding_non_coding_query,synteny_cutoff, flank_number, best_side, mafft,kaks_dir,singleton_dir_final,base_name,remaining_singletons, classify,tandems_dir, proximals_dir, dispersed_dir,mixed_dir,orth_file,tandems_output,proximals_output,dispersed_dups_output,mixed_dups_output,singletons_final):
+def identify_classify_duplicates_singletons(self_pairs_set,component,pos_dic_query,proximity,self_dic,orgname,each,no_alt_trans_dir,evo_analysis,files,pos_dic_ref, pos_nos_query, coding_non_coding_query,synteny_cutoff, flank_number, best_side, mafft,kaks_dir,singleton_dir_final,base_name,remaining_singletons, classify,tandems_dir, proximals_dir, dispersed_dir,mixed_dir,orth_file,tandems_output,proximals_output,dispersed_dups_output,mixed_dups_output,singletons_final, frequency_plots_dir, dpi):
 	# code lines to get the final gene duplicates outputs
 	t_master_start = time.perf_counter()
 	duplicates_master_list = sec_besthits_to_duplicates_list(str(component))
@@ -7574,12 +7574,71 @@ def identify_classify_duplicates_singletons(self_pairs_set,component,pos_dic_que
 
 	if classify == 'strict':
 		messages.append(str(orgname) + "\t" + str(i) + "\t" + str(j)+"\t" + str(k)+"\t" + str(l)+"\t"+str(len(singles)) + "\t" + str(tot_low_confidence_groups) + "\t" +str(tot_moderate_confidence_groups) + "\t" + str(tot_high_confidence_groups))
+		#code to plot absolute and relative frequency plots
+		category_num_data={"Tandem": i,
+		"Proximal": j,
+		"Dispersed": k,
+		"Mixed": l,
+		"Singletons": singles}
+		# Convert to pandas Series
+		s = pd.Series(category_num_data)
+
+		# Compute relative frequencies (%)
+		relative = s / s.sum() * 100
+		# Absolute frequency plot
+		plt.figure(figsize=(8, 5))
+		s.plot(kind="bar")
+		plt.ylabel("Absolute gene frequency")
+		plt.xlabel("Classification category")
+		plt.xticks(rotation=0)
+		plt.tight_layout()
+		abs_frequency_plot = os.path.join(frequency_plots_dir,orgname+'_absolute_frequency_plot.png')
+		plt.savefig(abs_frequency_plot,dpi=600)
+
+		# Relative frequency plot
+		plt.figure(figsize=(8, 5))
+		relative.plot(kind="bar")
+		plt.ylabel("Relative gene frequency (%)")
+		plt.xlabel("Classification category")
+		plt.xticks(rotation=0)
+		plt.tight_layout()
+		rel_frequency_plot = os.path.join(frequency_plots_dir, orgname + '_relative_frequency_plot.png')
+		plt.savefig(rel_frequency_plot, dpi=600)
 	else:
 		messages.append(str(orgname) + "\t" + str(i) + "\t" + str(j)+"\t" + str(k)+"\t"+str(len(singles))+ "\t" + str(tot_low_confidence_groups) + "\t" +str(tot_moderate_confidence_groups) + "\t" + str(tot_high_confidence_groups))
+		# code to plot absolute and relative frequency plots
+		category_num_data = {"Tandem": i,
+							 "Proximal": j,
+							 "Dispersed": k,
+							 "Singletons": singles}
+		# Convert to pandas Series
+		s = pd.Series(category_num_data)
+
+		# Compute relative frequencies (%)
+		relative = s / s.sum() * 100
+		# Absolute frequency plot
+		plt.figure(figsize=(8, 5))
+		s.plot(kind="bar")
+		plt.ylabel("Absolute gene frequency")
+		plt.xlabel("Classification category")
+		plt.xticks(rotation=0)
+		plt.tight_layout()
+		abs_frequency_plot = os.path.join(frequency_plots_dir, orgname + '_absolute_frequency_plot.png')
+		plt.savefig(abs_frequency_plot, dpi=600)
+
+		# Relative frequency plot
+		plt.figure(figsize=(8, 5))
+		relative.plot(kind="bar")
+		plt.ylabel("Relative gene frequency (%)")
+		plt.xlabel("Classification category")
+		plt.xticks(rotation=0)
+		plt.tight_layout()
+		rel_frequency_plot = os.path.join(frequency_plots_dir, orgname + '_relative_frequency_plot.png')
+		plt.savefig(rel_frequency_plot, dpi=600)
 	return messages
 
 #master function to parallelize gene duplicates classification and ortholog assignments in the presence of a reference organism
-def parallelize_duplicates_processing(gff3_input_file,peptide_file_list,self_list,self_file_list,fwd_file_list,orthologs_file_list, tmp_singleton_files,proximity,no_alt_trans_dir,evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side, mafft,kaks_dir,singleton_dir_final,classify,cores,ref_name,tandems_dir, proximals_dir, dispersed_dir,mixed_dir,unclassified_dir_final,output_dir,logger,process_pseudos, gff_posdic_file_list):
+def parallelize_duplicates_processing(gff3_input_file,peptide_file_list,self_list,self_file_list,fwd_file_list,orthologs_file_list, tmp_singleton_files,proximity,no_alt_trans_dir,evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side, mafft,kaks_dir,singleton_dir_final,classify,cores,ref_name,tandems_dir, proximals_dir, dispersed_dir,mixed_dir,unclassified_dir_final,output_dir,logger,process_pseudos, gff_posdic_file_list, frequency_plots_dir, dpi):
 	# Dynamically detect number of CPU cores
 	total_cores = cores
 	if ref_name != 'NA':
@@ -7649,7 +7708,7 @@ def parallelize_duplicates_processing(gff3_input_file,peptide_file_list,self_lis
 									if all_files_exist:
 										pass
 									else:
-										futures.append(executor.submit(identify_classify_duplicates_singletons, self_pairs_set,str(component), pos_dic_query, proximity, self_dic,str(orgname[0]), each, no_alt_trans_dir, evo_analysis,fwd_file, pos_dic_ref, pos_nos_query,coding_non_coding_query, synteny_cutoff, flank_number,best_side, mafft, kaks_dir, singleton_dir_final, base_name,remaining_singletons, classify, tandems_dir, proximals_dir,dispersed_dir, mixed_dir,orth_file,tandems_output,proximals_output,dispersed_dups_output,mixed_dups_output,singletons_final))
+										futures.append(executor.submit(identify_classify_duplicates_singletons, self_pairs_set,str(component), pos_dic_query, proximity, self_dic,str(orgname[0]), each, no_alt_trans_dir, evo_analysis,fwd_file, pos_dic_ref, pos_nos_query,coding_non_coding_query, synteny_cutoff, flank_number,best_side, mafft, kaks_dir, singleton_dir_final, base_name,remaining_singletons, classify, tandems_dir, proximals_dir,dispersed_dir, mixed_dir,orth_file,tandems_output,proximals_output,dispersed_dups_output,mixed_dups_output,singletons_final, frequency_plots_dir, dpi))
 		# Wrap the iterator conditionally
 		iterator = as_completed(futures)
 		if tqdm_available:
@@ -8576,11 +8635,14 @@ def main( arguments ):
 	if not os.path.exists(output_dir):
 		os.makedirs( output_dir )
 
+	frequency_plots_dir=os.path.join(output_dir, "Duplication_frequency_plots")#creating the path for the folder for storing frequency plots of classification category orgnaism-wise
+	os.makedirs(frequency_plots_dir, exist_ok=True)#Creates Duplication_freuqncy_plots folder in the specified location
+
 	norm_bit_score_plots_dir = os.path.join(output_dir, "Duplication_landscape_plots")#Creating the path for the folder for storing normalized bit score plots for each query species
-	os.makedirs(norm_bit_score_plots_dir, exist_ok=True)#Creates a SINGLETONS folder in the specified path location
+	os.makedirs(norm_bit_score_plots_dir, exist_ok=True)#Creates a Duplication_landscape_plots folder in the specified path location
 
 	singleton_dir_final = os.path.join(output_dir, "Singletons")#Creating the path for the folder for storing singleton genes for each query species
-	os.makedirs(singleton_dir_final, exist_ok=True)#Creates a Duplication_landscape_plots folder in the specified path location
+	os.makedirs(singleton_dir_final, exist_ok=True)#Creates a Singletons folder in the specified path location
 
 	unclassified_dir_final = os.path.join(output_dir, "Unclassified")#Creating the path for the folder for storing unclassified genes for each query species
 	os.makedirs(unclassified_dir_final, exist_ok=True)#Creates a Unclassified folder in the specified path location
@@ -9838,12 +9900,12 @@ def main( arguments ):
 					pos_dic_ref, pos_nos_ref, coding_non_coding_ref = gff_pos_details[gffdic_org_name]
 		tmp_singleton_files = glob.glob(os.path.join(singleton_dir, "*.tsv"))
 		# code to get the positional dictionary of the query organism and final grouping and writing of gene duplicates
-		parallelize_duplicates_processing(gff3_input_file, peptides_file_list, self_list, self_file_list, fwd_file_list,orthologs_file_list, tmp_singleton_files, proximity, no_alt_trans_dir, evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side,mafft, kaks_dir, singleton_dir_final, classify, cores, ref_name, tandems_dir,proximals_dir, dispersed_dir, mixed_dir, unclassified_dir_final, output_dir,logger,process_pseudos, gff_posdic_file_list)
+		parallelize_duplicates_processing(gff3_input_file, peptides_file_list, self_list, self_file_list, fwd_file_list,orthologs_file_list, tmp_singleton_files, proximity, no_alt_trans_dir, evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side,mafft, kaks_dir, singleton_dir_final, classify, cores, ref_name, tandems_dir,proximals_dir, dispersed_dir, mixed_dir, unclassified_dir_final, output_dir,logger,process_pseudos, gff_posdic_file_list,frequency_plots_dir,dpi)
 	else:
 		tmp_singleton_files = glob.glob(os.path.join(singleton_dir, "*.tsv"))
 		pos_dic_ref = {}
 		# code to get the positional dictionary of the query organism and final grouping and writing of gene duplicates
-		parallelize_duplicates_processing(gff3_input_file, peptides_file_list, self_list, self_file_list, fwd_file_list,orthologs_file_list, tmp_singleton_files, proximity, no_alt_trans_dir, evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side,mafft, kaks_dir, singleton_dir_final, classify, cores, ref_name, tandems_dir,proximals_dir, dispersed_dir, mixed_dir, unclassified_dir_final, output_dir,logger,process_pseudos, gff_posdic_file_list)
+		parallelize_duplicates_processing(gff3_input_file, peptides_file_list, self_list, self_file_list, fwd_file_list,orthologs_file_list, tmp_singleton_files, proximity, no_alt_trans_dir, evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side,mafft, kaks_dir, singleton_dir_final, classify, cores, ref_name, tandems_dir,proximals_dir, dispersed_dir, mixed_dir, unclassified_dir_final, output_dir,logger,process_pseudos, gff_posdic_file_list, frequency_plots_dir, dpi)
 
 	#if the user has specified a single or list of desired genes in the presence of a reference organism
 	if len(desired_genes)!=0 and ref_name != 'NA':
