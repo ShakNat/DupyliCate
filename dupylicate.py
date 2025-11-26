@@ -4239,7 +4239,7 @@ def run_busco(orgname, fasta_file, busco_path, busco_dir, busco_dir_final, busco
 			else:
 				if orgname in buscolineage_dic.keys():
 					lineage=buscolineage_dic[orgname]
-					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --l '+ lineage + ' -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins -l '+ lineage + ' -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
 				else:
 					logger.warning(f"BUSCO lineage not specified for {orgname}. Reverting back to auto lineage detection.")
 					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-euk -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
@@ -4249,7 +4249,7 @@ def run_busco(orgname, fasta_file, busco_path, busco_dir, busco_dir_final, busco
 			else:
 				if orgname in buscolineage_dic.keys():
 					lineage=buscolineage_dic[orgname]
-					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --l ' + lineage + ' -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins -l ' + lineage + ' -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
 				else:
 					logger.warning(f"BUSCO lineage not specified for {orgname}. Reverting back to auto lineage detection.")
 					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-prok -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
