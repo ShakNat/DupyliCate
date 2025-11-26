@@ -7601,7 +7601,7 @@ def identify_classify_duplicates_singletons(self_pairs_set,component,pos_dic_que
 		"Proximal": j,
 		"Dispersed": k,
 		"Mixed": l,
-		"Singletons": singles}
+		"Singletons": len(singles)}
 		# Convert to pandas Series
 		s = pd.Series(category_num_data)
 
@@ -7632,7 +7632,7 @@ def identify_classify_duplicates_singletons(self_pairs_set,component,pos_dic_que
 		category_num_data = {"Tandem": i,
 							 "Proximal": j,
 							 "Dispersed": k,
-							 "Singletons": singles}
+							 "Singletons": len(singles)}
 		# Convert to pandas Series
 		s = pd.Series(category_num_data)
 
