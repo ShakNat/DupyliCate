@@ -1,4 +1,4 @@
-### v1.2 ###
+### v1.2.0.0 ###
 ### Shakunthala Natarajan ###
 ### Boas Pucker ###
 
