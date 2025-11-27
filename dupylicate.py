@@ -7142,7 +7142,6 @@ def collect_groups_for_kaks(cds,pep,pepname,tandems_dir,proximals_dir,dispersed_
 	ax.set_xlabel('Ka/Ks (ω)', fontsize=12)
 	ax.set_ylabel('Number of genes', fontsize=12)
 	ax.set_title(f'Ka/Ks Distribution (n={len(df_filtered)} genes, p ≤ 0.05)', fontsize=14)
-	ax.legend()
 	plt.tight_layout()
 	plt.savefig(kaks_plot_file,dpi=dpi_no)
 	logger.info(f"Ka/Ks analysis completed for {pepname}.")
