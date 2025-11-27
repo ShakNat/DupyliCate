@@ -184,6 +184,8 @@ OPTIONAL:
 
 	--busco									STR			Full path to BUSCO | busco_docker [DEFAULT is busco]
 
+	--busco_lineage							STR			Full path to BUSCO config file [DEFAULT is auto]
+
 	--busco_version							STR			BUSCO version in the format vx.x.x> [DEFAULT is v5.8.2]  
 
 	--container_version						STR			Docker container version of BUSCO [DEFAULT is cv1]
@@ -260,6 +262,8 @@ ALLOWED FILE EXTENSIONS:
 `--gemoma` The full path to GeMoMa must also include the name of the GeMoMa jar file
 
 `--busco` This flag can take the full path to busco. If you have installed busco via conda, activate the environment anf give the full path. If you have a docker-based installation of busco, just give busco_docker as the parameter to this flag
+
+`--busco_lineage` This flag can take the full path to BUSCO config file that specifies the BUSCO lineage to be used for the different sample organisms in an analysis
 
 `--busco_version` `--container_version` `--docker_host_path` `--docker_container_path` These flags are needed only if you want to do a BUSCO-based QC or auto scoring and if you have a docker-based busco installation
 
@@ -372,6 +376,17 @@ Understanding the GFF config file:
    
    	Vrotundifolia,Vvinifera
 
+### Preparing the BUSCO config file
+
+DupyliCate by default uses the --auto-lineage-euk, --auto-lineage-prok to detect the BUSCO lineages of sample organisms. However in case you want to specify a lineage to choose, 
+you can use the `--busco_lineage` flag and specify the path to this BUSCO config file.
+
+1) This is a simple two column TXT file separated by tab
+
+2) The first column is the sample organism name and the second column is the busco lineage you want to specify
+
+3) Please ensure that this organism name and the input annotation, assembly file names of the sample organism without the extensions are matching.
+
 ## Helper scripts
 
 ```
@@ -469,7 +484,9 @@ OPTIONAL:
 
 - **run_parameters.json**: json file that keeps a record of all the parameters used for a particular run of the tool
 
-- **Duplication landscape plots**: Histogram plots of normalized bit scores of a gene's second best hit and self hit in self alignment of the sample; Depicts the genome level gene duplication status.
+- **Duplication landscape plots**: Histogram plots of normalized bit scores of a gene's second best hit and self hit in self alignment of the sample; Depicts the genome level gene duplication status
+
+- **Duplication frequency plots**: Bar plots depicting the actual and relative percentage of genes in the different classification categories
 
 - **BUSCO QC Summary file**: TSV file with information about BUSCO completeness, duplication, Feff (pseudo-ploidy number - approximate indication of ploidy)
 
@@ -583,6 +600,8 @@ The ortholog confidence is denoted in the last column. In case of low confidence
 
   - Each file in this folder is a tsv file. Every individual gene in a gene duplicate group is assigned a Ka/Ks value in this file. This gene-level Ka/Ks value is obtained by a series of statistical analyses, and normalization approaches
     in the script
+
+- **Ka/Ks plot**: Distribution plot of statistically significant Ka/Ks values (adjusted pval<=0.05) of gene duplicates to assess the trend of selection pressures on gene duplicates; This is a filtered Ka/Ks plot taht removes extreme Ka/Ks values
     
 - **Duplicates_analysis**: Folder containing organism wise gene expression output folders; Each organism folder shows Plots folder, Stats folder, the kernel density estimation plot of correlation coefficients used for determining the
   divergent expression threshold, and TXT file of perceived pseudogenes (genes that have low expression across the different RNASeq samples used for generating the counts table file) in that organism;
