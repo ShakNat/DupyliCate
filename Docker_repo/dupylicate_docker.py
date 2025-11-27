@@ -1,4 +1,4 @@
-### v1.0 ###
+### v1.2 ###
 ### Shakunthala Natarajan ###
 ### Boas Pucker ###
 
@@ -29,16 +29,17 @@ __usage__ = """
 				   duplicates containing the related connected components from the other three duplicate classes> DEFAULT is overlap
 			--to_annotate <full path to file containing names of queries and the corresponding reference organism for GeMoMa annotation separated by comma - Query,Reference -> one pair per line>
 			--seq_aligner <choose one among blast | diamond | mmseqs2 > DEFAULT is DIAMOND
-			--blast <full path to BLAST if not already in yopur PATH environment variable>
-			--diamond <full path to diamond if not already in yopur PATH environment variable>
-			--mmseqs <full path to mmseqs2 if not already in yopur PATH environment variable>
-			--mafft <full path to MAFFT if not already in yopur PATH environment variable>
+			--blast <full path to BLAST if not already in your PATH environment variable>
+			--diamond <full path to diamond if not already in your PATH environment variable>
+			--mmseqs <full path to mmseqs2 if not already in your PATH environment variable>
+			--mafft <full path to MAFFT if not already in your PATH environment variable>
 			--tree <yes | no to include or not include phylogeny in ortholog detection> < default is yes>
 			--evalue <evalue for alignment> DEFAULT is 1e-5
-			--gemoma <full path to GeMoMa if not already in yopur PATH environment variable>
+			--gemoma <full path to GeMoMa if not already in your PATH environment variable>
 			--qc < yes | no for quality check with BUSCO> Default is no
-			--busco  <full path to BUSCO or choose 'busco_docker' for docker-based BUSCO installtion> Default is 'busco'
-			--busco_version <BUSCO version in the format vx.x.x - needed only if you have docker-based BUSCO installation> Deafult is v6.0.0
+			--busco  <full path to BUSCO or choose 'busco_docker' for docker-based BUSCO installation> Default is 'busco'
+			--busco_version <BUSCO version in the format vx.x.x - needed only if you have docker-based BUSCO installation> Default is v6.0.0
+			--busco_lineage <full path to tab separated config file where the first column is sample organism name and the second column is busco lineage>
 			--container_version <docker container version of BUSCO> Default is cv1
 			--docker_host_path < full host folder path - needed for docker-based BUSCO installation>
 			--docker_container_path < full mount path in the docker container - needed for docker-based BUSCO installation>
@@ -55,7 +56,7 @@ __usage__ = """
 			--flank <integer value specifying the number of flanking genes to be considered to determine the synteny window size in synteny analysis>
 			--side <integer value for synteny support from either side of a flanking region of a synteny window>
 			--ka_ks <yes | no to calculate ka, ks values> DEFAULT is 'no'
-			--ka_ks_method < MYN | NG methods for Ka/Ks ratio caclulation> Default is NG
+			--ka_ks_method < MYN | NG methods for Ka/Ks ratio calculation> Default is NG
 			--duplicates_analysis <yes | no for further statistical analysis of identified gene duplicates> DEFAULT is no
 			--specific_duplicates_analysis <yes | no for further statistical analysis of specified ref genes' gene duplicates> DEFAULT is no
 			--ref_free_specific_duplicates_analysis <full path to txt file containing the names of genes whose expression analysis is to be done in the absence of a reference>
@@ -160,6 +161,7 @@ Defaults = {
 	'qc': 'no',
 	'busco': 'NA',
 	'busco_version': 'NA',
+	'busco_lineage':'auto',
 	'container_version':'NA',
 	'docker_host_path': 'NA',
 	'docker_container_path': 'NA',
@@ -1912,12 +1914,12 @@ def load_transcript_information_from_gff3( gff3_input_file,process_pseudos,child
 		with gzip.open(gff3_input_file, "rt") as f:
 			gff_lines = f.readlines()
 			has_mrna = any(line.split('\t')[2].upper() == 'MRNA' for line in gff_lines
-					if not line.startswith('#') and len(line.split('\t')) >= 3)
+				   if not line.startswith('#') and len(line.split('\t')) >= 3)
 			has_transcript = any(line.split('\t')[2].upper() == 'TRANSCRIPT' for line in gff_lines
-					if not line.startswith('#') and len(line.split('\t')) >= 3)
+						 if not line.startswith('#') and len(line.split('\t')) >= 3)
 			# checking if cds feature is present in the GFF file
 			has_cds = any(line.split('\t')[2].upper() == 'CDS' for line in gff_lines
-					if not line.startswith('#') and len(line.split('\t')) >= 3)
+				  if not line.startswith('#') and len(line.split('\t')) >= 3)
 
 		with gzip.open(gff3_input_file, "rt") as f:
 			gff_lines = f.readlines()
@@ -4211,7 +4213,16 @@ def clean_headers_for_busco(gene_id):
 	return safe_gene_id
 
 #function to run BUSCO
-def run_busco(orgname, fasta_file, busco_path, busco_dir, busco_dir_final, busco_threads_per_organism, org_type,host_cache_dir, busco_db_dir, busco_pickle_file,logger):
+def run_busco(orgname, fasta_file, busco_path, busco_dir, busco_dir_final, busco_threads_per_organism, org_type,host_cache_dir, busco_db_dir, busco_pickle_file,logger,buscolineage):
+	#code to extract lineages to use from busco lineage config file
+	buscolineage_dic={}
+	if buscolineage!='auto':
+		with open (buscolineage,'r')as f:
+			line=f.readline()
+			while line:
+				parts=line.strip().split()
+				buscolineage_dic[parts[0]]=parts[1].strip()
+				line=f.readline()
 	#code to create a temp protein fasta file to clean headers and use this clean protein file for busco analysis - this temp file will be deleted after the busco run completes
 	tmp_fasta = os.path.join(busco_dir, f"{orgname}_temp.pep.fasta")
 	try:
@@ -4224,9 +4235,26 @@ def run_busco(orgname, fasta_file, busco_path, busco_dir, busco_dir_final, busco
 				else:
 					outfile.write(line)
 		if org_type == 'eukaryote':
-			cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-euk -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+			if buscolineage=='auto':
+				cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-euk -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+			else:
+				if orgname in buscolineage_dic.keys():
+					lineage=buscolineage_dic[orgname]
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins -l '+ lineage + ' -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+				else:
+					logger.warning(f"BUSCO lineage not specified for {orgname}. Reverting back to auto lineage detection.")
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-euk -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
 		elif org_type == 'prokaryote':
-			cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-prok -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+			if buscolineage=='auto':
+				cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-prok -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+			else:
+				if orgname in buscolineage_dic.keys():
+					lineage=buscolineage_dic[orgname]
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins -l ' + lineage + ' -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+				else:
+					logger.warning(f"BUSCO lineage not specified for {orgname}. Reverting back to auto lineage detection.")
+					cmd = busco_path + ' -i ' + tmp_fasta + ' -m proteins --auto-lineage-prok -q -o ' + orgname + ' -c ' + busco_threads_per_organism + ' --out_path ' + busco_dir + ' --download_path ' + busco_db_dir
+
 		p = subprocess.Popen(args=cmd, shell=True)
 		p.communicate()
 	finally:
@@ -6954,7 +6982,7 @@ def load_sequences_to_dic(filepath):
 	return sequences
 
 #first level worker function for kaks analysis that finally computes individual gene-level Ka/Ks values and their statistical significance
-def collect_groups_for_kaks(cds,pep,pepname,tandems_dir,proximals_dir,dispersed_dir,mixed_dir,classify,logger,mafft,threads_per_organism,kaks_dir,ref_name,method,kaks_output_file):
+def collect_groups_for_kaks(cds,pep,pepname,tandems_dir,proximals_dir,dispersed_dir,mixed_dir,classify,logger,mafft,threads_per_organism,kaks_dir,ref_name,method,kaks_output_file,kaks_plot_file,dpi_no):
 	all_files = []
 	if classify == 'strict':
 		all_files.extend(tandems_dir + proximals_dir + dispersed_dir + mixed_dir)
@@ -7099,10 +7127,28 @@ def collect_groups_for_kaks(cds,pep,pepname,tandems_dir,proximals_dir,dispersed_
 			else:
 				selection_type = "Inconclusive - no statistical support"
 			out.write(f"{gene}\t{kaks_value:.6f}\t{pval if not math.isnan(pval) else 'NA'}\t{selection_type}\n")
+	#code for ka/ks plot
+	df =pd.read_csv(kaks_output_file,sep='\t')
+	#remove NA values
+	df = df[df['ka/ks'] != 'NA'].copy()
+	df['ka/ks'] = pd.to_numeric(df['ka/ks'])
+	df['pval'] = pd.to_numeric(df["Fisher's exact test p-value"], errors='coerce')
+	#only take ka/ks values less than or equal to 0.05
+	df_sig = df[df['pval'] <= 0.05]
+	# Filter extreme Ka/Ks values
+	df_filtered = df_sig[(df_sig['ka/ks'] > 0) & (df_sig['ka/ks'] < 5)]
+	# Plot histogram
+	fig, ax = plt.subplots(figsize=(10, 6))
+	ax.hist(df_filtered['ka/ks'], bins=50, edgecolor='black', alpha=0.7, color='steelblue')
+	ax.set_xlabel('Ka/Ks (ω)', fontsize=12)
+	ax.set_ylabel('Number of genes', fontsize=12)
+	ax.set_title(f'Ka/Ks Distribution (n={len(df_filtered)} genes, p ≤ 0.05)', fontsize=14)
+	plt.tight_layout()
+	plt.savefig(kaks_plot_file,dpi=dpi_no)
 	logger.info(f"Ka/Ks analysis completed for {pepname}.")
 
 #master function to control parallelization of ka/ks calculations
-def parallelize_kaks_calculations(cds_dir,pep_dir,tandems_dir,proximals_dir,dispersed_dir,mixed_dir,mafft,cores,classify,logger,kaks_dir,ref_name,method,org_type):
+def parallelize_kaks_calculations(cds_dir,pep_dir,tandems_dir,proximals_dir,dispersed_dir,mixed_dir,mafft,cores,classify,logger,kaks_dir,ref_name,method,org_type,dpi_no):
 	if ref_name != 'NA':
 		num_files = len(cds_dir)-1
 	else:
@@ -7123,8 +7169,9 @@ def parallelize_kaks_calculations(cds_dir,pep_dir,tandems_dir,proximals_dir,disp
 				pepname = (os.path.basename(str(every))).split('_no_alt_trans')[0]
 				if cdsname == pepname and cdsname!=ref_name and pepname!=ref_name:
 						kaks_output_file = os.path.join(kaks_dir, str(pepname) + "_kaks_summary.tsv")
+						kaks_plot_file=os.path.join(kaks_dir, str(pepname) + "_kaks_plot.png")
 						if not os.path.isfile(kaks_output_file):
-							futures.append(executor.submit(collect_groups_for_kaks, str(each), str(every), pepname,tandems_dir,proximals_dir,dispersed_dir,mixed_dir,classify,logger,mafft,threads_per_organism,kaks_dir,ref_name,method,kaks_output_file))
+							futures.append(executor.submit(collect_groups_for_kaks, str(each), str(every), pepname,tandems_dir,proximals_dir,dispersed_dir,mixed_dir,classify,logger,mafft,threads_per_organism,kaks_dir,ref_name,method,kaks_output_file,kaks_plot_file,dpi_no))
 		# Wrap the iterator conditionally
 		iterator = as_completed(futures)
 		if tqdm_available:
@@ -7388,7 +7435,7 @@ def ref_anchor_finder_output_writer_dispersed_mixed(fwd_best_hits_dic, orthologs
 	return low_confidence, moderate_confidence, high_confidence
 
 #functions to parallelize the gene duplicates identification, classification, ka/ks analysis, singletons and output writing steps
-def identify_classify_duplicates_singletons(self_pairs_set,component,pos_dic_query,proximity,self_dic,orgname,each,no_alt_trans_dir,evo_analysis,files,pos_dic_ref, pos_nos_query, coding_non_coding_query,synteny_cutoff, flank_number, best_side, mafft,kaks_dir,singleton_dir_final,base_name,remaining_singletons, classify,tandems_dir, proximals_dir, dispersed_dir,mixed_dir,orth_file,tandems_output,proximals_output,dispersed_dups_output,mixed_dups_output,singletons_final):
+def identify_classify_duplicates_singletons(self_pairs_set,component,pos_dic_query,proximity,self_dic,orgname,each,no_alt_trans_dir,evo_analysis,files,pos_dic_ref, pos_nos_query, coding_non_coding_query,synteny_cutoff, flank_number, best_side, mafft,kaks_dir,singleton_dir_final,base_name,remaining_singletons, classify,tandems_dir, proximals_dir, dispersed_dir,mixed_dir,orth_file,tandems_output,proximals_output,dispersed_dups_output,mixed_dups_output,singletons_final, frequency_plots_dir, dpi_no):
 	# code lines to get the final gene duplicates outputs
 	t_master_start = time.perf_counter()
 	duplicates_master_list = sec_besthits_to_duplicates_list(str(component))
@@ -7549,12 +7596,71 @@ def identify_classify_duplicates_singletons(self_pairs_set,component,pos_dic_que
 
 	if classify == 'strict':
 		messages.append(str(orgname) + "\t" + str(i) + "\t" + str(j)+"\t" + str(k)+"\t" + str(l)+"\t"+str(len(singles)) + "\t" + str(tot_low_confidence_groups) + "\t" +str(tot_moderate_confidence_groups) + "\t" + str(tot_high_confidence_groups))
+		#code to plot absolute and relative frequency plots
+		category_num_data={"Tandem": i,
+		"Proximal": j,
+		"Dispersed": k,
+		"Mixed": l,
+		"Singletons": len(singles)}
+		# Convert to pandas Series
+		s = pd.Series(category_num_data)
+
+		# Compute relative frequencies (%)
+		relative = s / s.sum() * 100
+		# Absolute frequency plot
+		plt.figure(figsize=(8, 5))
+		s.plot(kind="bar")
+		plt.ylabel("Absolute gene frequency")
+		plt.xlabel("Classification category")
+		plt.xticks(rotation=0)
+		plt.tight_layout()
+		abs_frequency_plot = os.path.join(frequency_plots_dir,orgname+'_absolute_frequency_plot.png')
+		plt.savefig(abs_frequency_plot,dpi=dpi_no)
+
+		# Relative frequency plot
+		plt.figure(figsize=(8, 5))
+		relative.plot(kind="bar")
+		plt.ylabel("Relative gene frequency (%)")
+		plt.xlabel("Classification category")
+		plt.xticks(rotation=0)
+		plt.tight_layout()
+		rel_frequency_plot = os.path.join(frequency_plots_dir, orgname + '_relative_frequency_plot.png')
+		plt.savefig(rel_frequency_plot, dpi=dpi_no)
 	else:
 		messages.append(str(orgname) + "\t" + str(i) + "\t" + str(j)+"\t" + str(k)+"\t"+str(len(singles))+ "\t" + str(tot_low_confidence_groups) + "\t" +str(tot_moderate_confidence_groups) + "\t" + str(tot_high_confidence_groups))
+		# code to plot absolute and relative frequency plots
+		category_num_data = {"Tandem": i,
+							 "Proximal": j,
+							 "Dispersed": k,
+							 "Singletons": len(singles)}
+		# Convert to pandas Series
+		s = pd.Series(category_num_data)
+
+		# Compute relative frequencies (%)
+		relative = s / s.sum() * 100
+		# Absolute frequency plot
+		plt.figure(figsize=(8, 5))
+		s.plot(kind="bar")
+		plt.ylabel("Absolute gene frequency")
+		plt.xlabel("Classification category")
+		plt.xticks(rotation=0)
+		plt.tight_layout()
+		abs_frequency_plot = os.path.join(frequency_plots_dir, orgname + '_absolute_frequency_plot.png')
+		plt.savefig(abs_frequency_plot, dpi=dpi_no)
+
+		# Relative frequency plot
+		plt.figure(figsize=(8, 5))
+		relative.plot(kind="bar")
+		plt.ylabel("Relative gene frequency (%)")
+		plt.xlabel("Classification category")
+		plt.xticks(rotation=0)
+		plt.tight_layout()
+		rel_frequency_plot = os.path.join(frequency_plots_dir, orgname + '_relative_frequency_plot.png')
+		plt.savefig(rel_frequency_plot, dpi=dpi_no)
 	return messages
 
 #master function to parallelize gene duplicates classification and ortholog assignments in the presence of a reference organism
-def parallelize_duplicates_processing(gff3_input_file,peptide_file_list,self_list,self_file_list,fwd_file_list,orthologs_file_list, tmp_singleton_files,proximity,no_alt_trans_dir,evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side, mafft,kaks_dir,singleton_dir_final,classify,cores,ref_name,tandems_dir, proximals_dir, dispersed_dir,mixed_dir,unclassified_dir_final,output_dir,logger,process_pseudos, gff_posdic_file_list):
+def parallelize_duplicates_processing(gff3_input_file,peptide_file_list,self_list,self_file_list,fwd_file_list,orthologs_file_list, tmp_singleton_files,proximity,no_alt_trans_dir,evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side, mafft,kaks_dir,singleton_dir_final,classify,cores,ref_name,tandems_dir, proximals_dir, dispersed_dir,mixed_dir,unclassified_dir_final,output_dir,logger,process_pseudos, gff_posdic_file_list, frequency_plots_dir, dpi_no):
 	# Dynamically detect number of CPU cores
 	total_cores = cores
 	if ref_name != 'NA':
@@ -7624,7 +7730,7 @@ def parallelize_duplicates_processing(gff3_input_file,peptide_file_list,self_lis
 									if all_files_exist:
 										pass
 									else:
-										futures.append(executor.submit(identify_classify_duplicates_singletons, self_pairs_set,str(component), pos_dic_query, proximity, self_dic,str(orgname[0]), each, no_alt_trans_dir, evo_analysis,fwd_file, pos_dic_ref, pos_nos_query,coding_non_coding_query, synteny_cutoff, flank_number,best_side, mafft, kaks_dir, singleton_dir_final, base_name,remaining_singletons, classify, tandems_dir, proximals_dir,dispersed_dir, mixed_dir,orth_file,tandems_output,proximals_output,dispersed_dups_output,mixed_dups_output,singletons_final))
+										futures.append(executor.submit(identify_classify_duplicates_singletons, self_pairs_set,str(component), pos_dic_query, proximity, self_dic,str(orgname[0]), each, no_alt_trans_dir, evo_analysis,fwd_file, pos_dic_ref, pos_nos_query,coding_non_coding_query, synteny_cutoff, flank_number,best_side, mafft, kaks_dir, singleton_dir_final, base_name,remaining_singletons, classify, tandems_dir, proximals_dir,dispersed_dir, mixed_dir,orth_file,tandems_output,proximals_output,dispersed_dups_output,mixed_dups_output,singletons_final, frequency_plots_dir, dpi_no))
 		# Wrap the iterator conditionally
 		iterator = as_completed(futures)
 		if tqdm_available:
@@ -8551,11 +8657,14 @@ def main( arguments ):
 	if not os.path.exists(output_dir):
 		os.makedirs( output_dir )
 
+	frequency_plots_dir=os.path.join(output_dir, "Duplication_frequency_plots")#creating the path for the folder for storing frequency plots of classification category orgnaism-wise
+	os.makedirs(frequency_plots_dir, exist_ok=True)#Creates Duplication_freuqncy_plots folder in the specified location
+
 	norm_bit_score_plots_dir = os.path.join(output_dir, "Duplication_landscape_plots")#Creating the path for the folder for storing normalized bit score plots for each query species
-	os.makedirs(norm_bit_score_plots_dir, exist_ok=True)#Creates a SINGLETONS folder in the specified path location
+	os.makedirs(norm_bit_score_plots_dir, exist_ok=True)#Creates a Duplication_landscape_plots folder in the specified path location
 
 	singleton_dir_final = os.path.join(output_dir, "Singletons")#Creating the path for the folder for storing singleton genes for each query species
-	os.makedirs(singleton_dir_final, exist_ok=True)#Creates a Duplication_landscape_plots folder in the specified path location
+	os.makedirs(singleton_dir_final, exist_ok=True)#Creates a Singletons folder in the specified path location
 
 	unclassified_dir_final = os.path.join(output_dir, "Unclassified")#Creating the path for the folder for storing unclassified genes for each query species
 	os.makedirs(unclassified_dir_final, exist_ok=True)#Creates a Unclassified folder in the specified path location
@@ -8689,10 +8798,16 @@ def main( arguments ):
 	else:
 		busco_path = "/tools/dupy_env/bin/busco"
 
+	# Option for user to specify BUSCO lineage per input organism
+	if '--busco_lineage' in arguments:
+		buscolineage=arguments[arguments.index('--busco_lineage')+1]
+	else:
+		buscolineage='auto'
+
 	if '--busco_version' in arguments:
 		busco_version = arguments[arguments.index('--busco_version')+1]
 	else:
-		busco_version = "v6.0.0" #the most recent version of BUSCO at the time of writing this script
+		busco_version = "v6.0.0"#the most recent version of BUSCO at the time of writing this script
 
 	if '--container_version' in arguments:
 		container_version = arguments[arguments.index('--container_version')+1]
@@ -9078,9 +9193,9 @@ def main( arguments ):
 					if not os.path.isfile(busco_pickle_file):
 						if orgname != ref_name:
 							if busco_path != 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger,buscolineage)
 							elif busco_path == 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger,buscolineage)
 				busco_dic_file_path = Path(busco_dic_dir)
 				busco_dic_file_list = list(busco_dic_file_path.iterdir())
 				with open(busco_qc_result, 'w') as out:
@@ -9298,9 +9413,9 @@ def main( arguments ):
 					if not os.path.isfile(busco_pickle_file):
 						if orgname != ref_name:
 							if busco_path != 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger,buscolineage)
 							elif busco_path == 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger,buscolineage)
 				busco_dic_file_path = Path(busco_dic_dir)
 				busco_dic_file_list = list(busco_dic_file_path.iterdir())
 				with open(busco_qc_result, 'w') as out:
@@ -9503,9 +9618,9 @@ def main( arguments ):
 					if not os.path.isfile(busco_pickle_file):
 						if orgname != ref_name:
 							if busco_path != 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger,buscolineage)
 							elif busco_path == 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger,buscolineage)
 				busco_dic_file_path = Path(busco_dic_dir)
 				busco_dic_file_list = list(busco_dic_file_path.iterdir())
 				with open(busco_qc_result, 'w') as out:
@@ -9715,9 +9830,9 @@ def main( arguments ):
 					if not os.path.isfile(busco_pickle_file):
 						if orgname != ref_name:
 							if busco_path != 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path, busco_dir, busco_dir_final,str(busco_threads_per_organism), org_type, host_cache_dir,busco_db_dir, busco_pickle_file,logger,buscolineage)
 							elif busco_path == 'busco_docker':
-								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger)
+								run_busco(orgname, str(fasta_file), busco_path_generated, busco_dir,busco_dir_final, str(busco_threads_per_organism), org_type,container_cache_dir, container_db_dir, busco_pickle_file,logger,buscolineage)
 				busco_dic_file_path = Path(busco_dic_dir)
 				busco_dic_file_list = list(busco_dic_file_path.iterdir())
 				with open(busco_qc_result, 'w') as out:
@@ -9807,12 +9922,12 @@ def main( arguments ):
 					pos_dic_ref, pos_nos_ref, coding_non_coding_ref = gff_pos_details[gffdic_org_name]
 		tmp_singleton_files = glob.glob(os.path.join(singleton_dir, "*.tsv"))
 		# code to get the positional dictionary of the query organism and final grouping and writing of gene duplicates
-		parallelize_duplicates_processing(gff3_input_file, peptides_file_list, self_list, self_file_list, fwd_file_list,orthologs_file_list, tmp_singleton_files, proximity, no_alt_trans_dir, evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side,mafft, kaks_dir, singleton_dir_final, classify, cores, ref_name, tandems_dir,proximals_dir, dispersed_dir, mixed_dir, unclassified_dir_final, output_dir,logger,process_pseudos, gff_posdic_file_list)
+		parallelize_duplicates_processing(gff3_input_file, peptides_file_list, self_list, self_file_list, fwd_file_list,orthologs_file_list, tmp_singleton_files, proximity, no_alt_trans_dir, evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side,mafft, kaks_dir, singleton_dir_final, classify, cores, ref_name, tandems_dir,proximals_dir, dispersed_dir, mixed_dir, unclassified_dir_final, output_dir,logger,process_pseudos, gff_posdic_file_list,frequency_plots_dir,int(dpi_no))
 	else:
 		tmp_singleton_files = glob.glob(os.path.join(singleton_dir, "*.tsv"))
 		pos_dic_ref = {}
 		# code to get the positional dictionary of the query organism and final grouping and writing of gene duplicates
-		parallelize_duplicates_processing(gff3_input_file, peptides_file_list, self_list, self_file_list, fwd_file_list,orthologs_file_list, tmp_singleton_files, proximity, no_alt_trans_dir, evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side,mafft, kaks_dir, singleton_dir_final, classify, cores, ref_name, tandems_dir,proximals_dir, dispersed_dir, mixed_dir, unclassified_dir_final, output_dir,logger,process_pseudos, gff_posdic_file_list)
+		parallelize_duplicates_processing(gff3_input_file, peptides_file_list, self_list, self_file_list, fwd_file_list,orthologs_file_list, tmp_singleton_files, proximity, no_alt_trans_dir, evo_analysis,pos_dic_ref, synteny_cutoff, flank_number, best_side,mafft, kaks_dir, singleton_dir_final, classify, cores, ref_name, tandems_dir,proximals_dir, dispersed_dir, mixed_dir, unclassified_dir_final, output_dir,logger,process_pseudos, gff_posdic_file_list, frequency_plots_dir, int(dpi_no))
 
 	#if the user has specified a single or list of desired genes in the presence of a reference organism
 	if len(desired_genes)!=0 and ref_name != 'NA':
@@ -10182,7 +10297,7 @@ def main( arguments ):
 		mixed_folder_path = Path(mixed_dir)
 		mixed_file_list = list(mixed_folder_path.iterdir())
 		time_kaks_start = time.perf_counter()
-		parallelize_kaks_calculations(cds_file_list, peptides_file_list, tandems_file_list, proximals_file_list, dispersed_file_list, mixed_file_list, mafft,cores,classify,logger,kaks_dir,ref_name,method,org_type)
+		parallelize_kaks_calculations(cds_file_list, peptides_file_list, tandems_file_list, proximals_file_list, dispersed_file_list, mixed_file_list, mafft,cores,classify,logger,kaks_dir,ref_name,method,org_type,dpi_no)
 		time_kaks_end = time.perf_counter()
 		print(f"time taken for ka/ks analyses: {time_kaks_end - time_kaks_start}")
 
