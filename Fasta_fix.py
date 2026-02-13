@@ -1,4 +1,4 @@
-#v0.1
+#v0.2
 ### Shakunthala Natrajan ###
 ### Boas Pucker ###
 
@@ -297,9 +297,30 @@ def main(arguments):
 	if '--in' in arguments:
 		fasta_folder = arguments[arguments.index('--in') + 1]  # full path to GFF3 file or folder containing GFF3 annotation files
 		if fasta_folder[-1] == '/':
-			pattern = fasta_folder + "*{,.cds,.pep}*.{fa,fasta,fna}{,.gz}"
-			# Use glob.glob with the pattern
-			fasta_input_file = sorted(glob.glob(pattern, recursive=False))
+			patterns = [
+				fasta_folder + "*.fa",
+				fasta_folder + "*.fasta",
+				fasta_folder + "*.fna",
+				fasta_folder + "*.fa.gz",
+				fasta_folder + "*.fasta.gz",
+				fasta_folder + "*.fna.gz",
+				fasta_folder + "*.cds.fa",
+				fasta_folder + "*.cds.fasta",
+				fasta_folder + "*.cds.fna",
+				fasta_folder + "*.cds.fa.gz",
+				fasta_folder + "*.cds.fasta.gz",
+				fasta_folder + "*.cds.fna.gz",
+				fasta_folder + "*.pep.fa",
+				fasta_folder + "*.pep.fasta",
+				fasta_folder + "*.pep.fna",
+				fasta_folder + "*.pep.fa.gz",
+				fasta_folder + "*.pep.fasta.gz",
+				fasta_folder + "*.pep.fna.gz"
+			]
+			fasta_input_file = []
+			for pattern in patterns:
+				fasta_input_file.extend(glob.glob(pattern))
+			fasta_input_file = sorted(set(fasta_input_file))  # Remove duplicates and sort
 		else:
 			fasta_input_file = [fasta_folder]
 	output_dir = arguments[arguments.index('--out') + 1]  # full path to output folder
