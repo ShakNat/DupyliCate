@@ -103,7 +103,7 @@ docker pull shakunthalan/dupylicate:latest
 It is recommended to run the docker image as a user and not root:
 
 ```
- docker run -u $(id -u) -v /path/to/data:/data shakunthalan/dupylicate:latest
+ docker run --rm -u $(id -u) -v /path/to/data:/data shakunthalan/dupylicate:latest
 
 ```
 
