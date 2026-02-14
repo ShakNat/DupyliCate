@@ -3569,7 +3569,7 @@ def GFF3_position_to_dic(no_trans_pep, gff3_file,logger,process_pseudos,gene_nam
 									pos_nos[partsnew1] = start_position
 				line = f.readline()
 		for chr, genes in gene_pos_per_chr.items():#sort the genes in each contig based on their start positions and give the list with only gene ids and not positions
-			gene_pos_per_chr[chr]=[gene for gene, _ in sorted(genes, key=lambda x: x[1])]
+			gene_pos_per_chr[chr]=[gene for gene, _ in sorted(genes, key=lambda x: (x[1], x[0]))]
 		contig_names = gene_pos_per_chr.keys()
 	else:
 		with gzip.open(gff3_file, "rt") as f:
