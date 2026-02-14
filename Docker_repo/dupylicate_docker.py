@@ -8986,7 +8986,7 @@ def main( arguments ):
 			dpi_no = 150
 		elif dpi_level == 'high':
 			dpi_no = 300
-		elif dpi_level == 'very high':
+		elif dpi_level == 'very_high':
 			dpi_no = 600
 	else:
 		dpi_level = 'moderate'
