@@ -8035,8 +8035,8 @@ def plot_gene_expression(df,gene1, gene2, ax, correlation_info, pseudo_genes, te
 	# Let Matplotlib automatically set the ticks
 	ax.tick_params(axis='both', which='major', labelsize=8)  # Adjust tick label size
 	# Add axis labels to subplots
-	ax.set_xlabel(gene2, fontsize=8)
-	ax.set_ylabel(gene1, fontsize=8)
+	ax.set_xlabel(gene2, fontsize=8, fontstyle='italic')
+	ax.set_ylabel(gene1, fontsize=8, fontstyle='italic')
 
 	if gene1 not in pseudo_genes and gene2 not in pseudo_genes:
 		# Perform Spearman correlation
@@ -8045,58 +8045,173 @@ def plot_gene_expression(df,gene1, gene2, ax, correlation_info, pseudo_genes, te
 		correlation_info.append((gene1, gene2, corr, p_value))
 	return hist  # Return the histogram object to add a colorbar later
 
+#function to find optimal grid layout (rows, cols) to minimize blank space in compact mode of gene expression plots
+def find_optimal_grid(n_pairs):
+	"""
+	Prefers layouts with perfect fit (no blanks) and more columns than rows.
+	"""
+	import math
+	# Find all factor pairs where rows × cols = n_pairs
+	factors = []
+	for i in range(1, int(math.sqrt(n_pairs)) + 1):
+		if n_pairs % i == 0:
+			rows = i
+			cols = n_pairs // i
+			factors.append((rows, cols))
+
+	if factors:
+		# Return the most square-like factor (last one, which has largest rows)
+		return factors[-1]
+	else:
+		# No perfect factors, use ceiling of square root
+		n_cols = math.ceil(math.sqrt(n_pairs))
+		n_rows = math.ceil(n_pairs / n_cols)
+		return n_rows, n_cols
+
 #function to create matrix gene expression plots
-def create_matrix_plot_do_spearman(df, gene_duplicates_list, pseudo_genes, plots, temp_output_list,dpi_no):
+def create_matrix_plot_do_spearman(df, gene_duplicates_list, pseudo_genes, plots, temp_output_list,dpi_no,plot_mode):
 	# Number of genes
 	n = len(gene_duplicates_list)
 
 	# Create a list to store correlation information
 	correlation_info = []
 
-	# Dynamically adjust figure size
-	fig_size = max(2 * n, 10)  # Ensure a minimum size for readability
-	fig, axes = plt.subplots(n, n, figsize=(fig_size, fig_size), constrained_layout=False)
+	if plot_mode == 'compact':
+		# Calculate number of pairs (upper triangle)
+		n_pairs = n * (n - 1) // 2
 
-	# Loop through the gene list and plot only upper triangle (excluding diagonal)
-	for i in range(n):
-		for j in range(n):
-			if i < j:
+		# Find optimal grid layout to minimize blank space
+		n_rows, n_cols = find_optimal_grid(n_pairs)
+
+		# Adaptive figure sizing
+		fig_width = 5 * n_cols
+		fig_height = 5 * n_rows
+
+		# Create compact subplot grid
+		fig, axes = plt.subplots(n_rows, n_cols, figsize=(fig_width, fig_height), constrained_layout=False)
+
+		# Flatten axes array for easy indexing
+		if n_pairs == 1:
+			axes = [axes]
+		elif n_rows == 1 or n_cols == 1:
+			axes = axes.flatten() if hasattr(axes, 'flatten') else [axes]
+		else:
+			axes = axes.flatten()
+
+		# Plot each gene pair
+		plot_idx = 0
+		for i in range(n):
+			for j in range(i + 1, n):
 				gene1 = gene_duplicates_list[i]
 				gene2 = gene_duplicates_list[j]
 
-				# Plot pairwise expression in the corresponding axis (upper triangle of matrix)
-				ax = axes[i, j]
-				hist = plot_gene_expression(df, gene1, gene2, ax, correlation_info, pseudo_genes, temp_output_list)
-				# Turn off axes for unused subplots
-				axes[j, i].axis('off')
+				ax = axes[plot_idx]
+				hist = plot_gene_expression(df, gene1, gene2, ax, correlation_info,
+											pseudo_genes, temp_output_list)
 
-			elif i == j:
-				# Turn off diagonal plots
-				axes[i, j].axis('off')
+				# Add gene pair labels on each subplot (NO TITLE)
+				ax.set_xlabel(gene2, fontsize=11, fontstyle='italic')
+				ax.set_ylabel(gene1, fontsize=11, fontstyle='italic')
 
-	# Add gene names to the top row and left column
-	for i, gene in enumerate(gene_duplicates_list):
-		# Add gene names to the left side of the matrix (y-axis labels for rows)
-		axes[i, 0].annotate(gene, xy=(0, 0.5), xycoords='axes fraction', fontsize=15, ha='right', va='center',rotation=0, annotation_clip=False)
-		# Add gene names to the top of the matrix (x-axis labels for columns)
-		axes[0, i].set_title(gene_duplicates_list[i], fontsize=15, pad=20, loc='center')
-	# Add a single colorbar in the blank lower triangle space
-	cbar_ax = fig.add_axes([0.1, 0.05, 0.8, 0.02])  # Position at the bottom of the figure
-	cbar = fig.colorbar(hist[3], cax=cbar_ax, orientation='horizontal')
-	cbar.set_label(r'$\log_{10}$ density of points', fontsize=12)
+				plot_idx += 1
 
-	# Add a note near the colorbar
-	fig.text(0.5, 0.15, "NOTE_1: 'n' represents the number of samples used to create the gene expression plot",fontsize=20, ha='center', va='center')
-	fig.text(0.5, 0.1, "NOTE_2: The x and y axes show the gene expression in log(1+TPM)",fontsize=20, ha='center', va='center')
+		# Remove unused subplots (if any)
+		for idx in range(plot_idx, len(axes)):
+			fig.delaxes(axes[idx])
 
-	# Adjust layout using subplots_adjust instead of tight_layout
-	fig.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15, wspace=0.3, hspace=0.3)
+		# ROW-DEPENDENT BOTTOM MARGIN
+		# Fewer rows = larger plots = need MORE bottom margin
+		# Increased slightly to accommodate two note lines
+		if n_rows == 1:
+			bottom_margin = 0.35
+		elif n_rows == 2:
+			bottom_margin = 0.35
+		elif n_rows == 3:
+			bottom_margin = 0.3
+		else:  # 4+ rows
+			bottom_margin = 0.3
 
-	# Save the matrix figure plot
-	plt.savefig(os.path.join(plots, 'Pairwise_gene_expression_matrix.png'), bbox_inches='tight', dpi=dpi_no)
-	# Close the main plot figure to free up memory
+		# Adjust layout with row-dependent bottom margin
+		# Increased left margin to prevent y-axis label cutoff
+		plt.subplots_adjust(left=0.12, right=0.95, top=0.97, bottom=bottom_margin,
+							wspace=0.35, hspace=0.35)
+
+
+		# Position colorbar and notes consistently
+		cbar_ax = fig.add_axes([0.1, 0.05, 0.8, 0.02])
+		cbar = fig.colorbar(hist[3], cax=cbar_ax, orientation='horizontal')
+		cbar.set_label(r'$\log_{10}$ density of points', fontsize=12)
+		cbar.ax.tick_params(labelsize=10)
+
+		# Add notes above the colorbar
+		fig.text(0.5, 0.23,"NOTE_1: 'n' represents the number of samples used to create the gene expression plot",
+				 fontsize=12, ha='center', va='center')
+
+		fig.text(0.5, 0.15,"NOTE_2: The x and y axes show the gene expression in log(1+TPM)",
+				 fontsize=12, ha='center', va='center')
+
+		# Save the figure with padding to prevent label cutoff
+		plt.savefig(os.path.join(plots, 'Pairwise_gene_expression_compact.png'),
+					dpi=dpi_no, bbox_inches='tight', pad_inches=0.2)
+
+	else:  # matrix mode
+		# Dynamically adjust figure size
+		fig_size = max(2 * n, 10)
+		fig, axes = plt.subplots(n, n, figsize=(fig_size, fig_size), constrained_layout=False)
+
+		# Handle different array shapes for consistency
+		if n == 1:
+			axes = np.array([[axes]])
+		elif n == 2:
+			axes = axes.reshape(n, n)
+
+		# Loop through the gene list and plot only upper triangle (excluding diagonal)
+		for i in range(n):
+			for j in range(n):
+				if i < j:
+					gene1 = gene_duplicates_list[i]
+					gene2 = gene_duplicates_list[j]
+
+					# Plot pairwise expression in the corresponding axis
+					ax = axes[i, j]
+					hist = plot_gene_expression(df, gene1, gene2, ax, correlation_info,
+												pseudo_genes, temp_output_list)
+					# Turn off axes for unused subplots
+					axes[j, i].axis('off')
+
+				elif i == j:
+					# Turn off diagonal plots
+					axes[i, j].axis('off')
+
+		# Add gene names to the top row and left column
+		for i, gene in enumerate(gene_duplicates_list):
+			# Add gene names to the left side of the matrix
+			axes[i, 0].annotate(gene, xy=(0, 0.5), xycoords='axes fraction', fontsize=15, fontstyle='italic', ha='right', va='center', rotation=0, annotation_clip=False)
+			# Add gene names to the top of the matrix
+			axes[0, i].set_title(gene_duplicates_list[i], fontsize=15,fontstyle='italic', pad=20, loc='center')
+
+		# Add a single colorbar in the blank lower triangle space
+		cbar_ax = fig.add_axes([0.1, 0.05, 0.8, 0.02])
+		cbar = fig.colorbar(hist[3], cax=cbar_ax, orientation='horizontal')
+		cbar.set_label(r'$\log_{10}$ density of points', fontsize=12)
+
+		# Add notes near the colorbar
+		fig.text(0.5, 0.15, "NOTE_1: 'n' represents the number of samples used to create the gene expression plot",
+				 fontsize=20, ha='center', va='center')
+		fig.text(0.5, 0.1, "NOTE_2: The x and y axes show the gene expression in log(1+TPM)",
+				 fontsize=20, ha='center', va='center')
+
+		# Adjust layout
+		fig.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.15,
+							wspace=0.3, hspace=0.3)
+
+		# Save the matrix figure plot
+		plt.savefig(os.path.join(plots, 'Pairwise_gene_expression_matrix.png'),
+					bbox_inches='tight', dpi=dpi_no)
+
+	# Close the figure to free up memory
 	plt.close()
-	return correlation_info  # Return the list of correlation info
+	return correlation_info
 
 # function to perform Spearman correlation tests alone
 def calculate_spearman_correlation(gene_duplicates_list, df, pseudo_genes, temp_output_list):
@@ -8164,7 +8279,7 @@ def parallelize_rthresh_pseudogenes (analyses,validated_tpm_input_file,rand_gene
 			iterator = tqdm(iterator, total=len(futures), desc="Organisms processed for the rthreshold and pseudogenes finding step")
 
 #functions to parallelize the specific gene duplicate analysis steps
-def specific_sublist_analysis (dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos):
+def specific_sublist_analysis (dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos,plot_mode):
 	# function call to convert the gene expression data of the specified gene duplicates into a dataframe
 	duplicates_list_copy = copy.deepcopy(dups)
 	for gene in dups:
@@ -8176,7 +8291,7 @@ def specific_sublist_analysis (dups,pseudo_genes,exp_table,plots_org,stats_org,d
 	if 1 < len(duplicates_list_copy) <= 10:
 		# function call to make the Spearman correlation tests and the multi plot matrix figure
 		correlation_possibility = 'yes'
-		correlation_information = create_matrix_plot_do_spearman(gene_exp_df, duplicates_list_copy,pseudo_genes, plots_org, temp_output_list,dpi_no)
+		correlation_information = create_matrix_plot_do_spearman(gene_exp_df, duplicates_list_copy,pseudo_genes, plots_org, temp_output_list,dpi_no,plot_mode)
 	elif len(duplicates_list_copy) > 10:
 		# function call to make the Spearman correlation tests
 		correlation_possibility = 'yes'
@@ -8225,7 +8340,7 @@ def specific_sublist_analysis (dups,pseudo_genes,exp_table,plots_org,stats_org,d
 		f.writelines(unique_lines)
 
 #function to perform gene expression analysis of gene duplicates in an organism-wise manner in the case of specific gene uplicates expression analysis
-def specific_organism_analysis (df,dpi_no,rand_genes,org_col,every,org_folder,classification_col,chunk_size,pseudo_genes,r_threshold,logger,max_inner_workers):
+def specific_organism_analysis (df,dpi_no,rand_genes,org_col,every,org_folder,classification_col,chunk_size,pseudo_genes,r_threshold,logger,plot_mode,max_inner_workers):
 	plots_folder = os.path.join(org_folder,'Plots')  # Creating the path for the folder for storing the data of particular organism
 	os.makedirs(plots_folder, exist_ok=True)  # Creates an organism specific folder in the specified path location
 	stats_folder = os.path.join(org_folder,'Stats')  # Creating the path for the folder for storing the data of particular organism
@@ -8258,7 +8373,7 @@ def specific_organism_analysis (df,dpi_no,rand_genes,org_col,every,org_folder,cl
 					stats_org = os.path.join(stats_folder,f"{dups[0]}_group{stats_counter}_stats")
 					stats_counter += 1
 				os.makedirs(stats_org,exist_ok=True)  # Creates an organism specific stats folder in the specified path location
-				futures.append(duplicates_list_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos))
+				futures.append(duplicates_list_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos,plot_mode))
 			# Add tqdm for inner progress
 			# Prepare the iterator
 			iterator = concurrent.futures.as_completed(futures)
@@ -8298,7 +8413,7 @@ def specific_organism_analysis (df,dpi_no,rand_genes,org_col,every,org_folder,cl
 						stats_org = os.path.join(stats_folder, f"{dups[0]}_group{stats_counter}_stats")
 						stats_counter+=1
 					os.makedirs(stats_org, exist_ok=True)  # Creates an organism specific stats folder in the specified path location
-					batch_futures.append(batch_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos))
+					batch_futures.append(batch_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos,plot_mode))
 				# Add tqdm for inner progress
 				# Prepare the iterator
 				iterator = concurrent.futures.as_completed(batch_futures)
@@ -8317,7 +8432,7 @@ def specific_organism_analysis (df,dpi_no,rand_genes,org_col,every,org_folder,cl
 						raise
 
 #master function to parallelize gene expression plotting, and statistical analysis of specific gene duplicates organism-wise in the specific gene duplicates analysis mode
-def specific_two_step_parallelization_master(validated_tpm_input_file,master_folder, desired_genes_output_file,dpi_no,rand_genes,rthreshold_pseudogenes_file_list,logger,cores):
+def specific_two_step_parallelization_master(validated_tpm_input_file,master_folder, desired_genes_output_file,dpi_no,rand_genes,rthreshold_pseudogenes_file_list,logger,cores,plot_mode):
 	df = pd.read_csv(desired_genes_output_file, sep='\t')
 	# Extract column names (headers)
 	columns = df.columns.tolist()
@@ -8360,7 +8475,7 @@ def specific_two_step_parallelization_master(validated_tpm_input_file,master_fol
 						pseudo_dic, r_dic = pickle.load(f)
 					pseudo_genes = pseudo_dic[target_name]
 					r_threshold = r_dic[target_name]
-			org_futures.append(org_executor.submit(specific_organism_analysis,df,dpi_no,rand_genes,org_col,exp_file,org_folder,classification_col,chunk_size,pseudo_genes,r_threshold,logger,max_inner_workers=inner_cores))
+			org_futures.append(org_executor.submit(specific_organism_analysis,df,dpi_no,rand_genes,org_col,exp_file,org_folder,classification_col,chunk_size,pseudo_genes,r_threshold,logger,plot_mode,max_inner_workers=inner_cores))
 		# Prepare the iterator
 		iterator = concurrent.futures.as_completed(org_futures)
 		if tqdm_available:
@@ -8379,7 +8494,7 @@ def specific_two_step_parallelization_master(validated_tpm_input_file,master_fol
 	logger.info('Completed expression analysis of the specific duplicates.')
 
 #set of functions to parallelize the general gene duplications analysis steps for each organism in the regular expression analysis mode
-def ref_independent_organism_analysis(exp_table,org_folder,rand_genes,dpi_no,each,chunk_size,folder_type,pseudo_genes, r_threshold, org_name, specific_dup_list, ref_free_folder, orgname, singleton, logger, max_inner_workers):
+def ref_independent_organism_analysis(exp_table,org_folder,rand_genes,dpi_no,each,chunk_size,folder_type,pseudo_genes, r_threshold, org_name, specific_dup_list, ref_free_folder, orgname, singleton, logger,plot_mode, max_inner_workers):
 	singleton_list=[]
 	with open(singleton,'r')as f:
 		f.readline()
@@ -8429,7 +8544,7 @@ def ref_independent_organism_analysis(exp_table,org_folder,rand_genes,dpi_no,eac
 							stats_org = os.path.join(stats,f"{gene_dup}_group{stats_counter}_stats")
 							stats_counter+=1
 						os.makedirs(stats_org,exist_ok=True)  # Creates an organism specific stats folder in the specified path location
-						futures.append(duplicates_list_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos))
+						futures.append(duplicates_list_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos,plot_mode))
 			# Add tqdm for inner progress
 			# Prepare the iterator
 			iterator = concurrent.futures.as_completed(futures)
@@ -8467,7 +8582,7 @@ def ref_independent_organism_analysis(exp_table,org_folder,rand_genes,dpi_no,eac
 								stats_org = os.path.join(stats, f"{dups[0]}_group{stats_counter}_stats")
 								stats_counter+=1
 							os.makedirs(stats_org, exist_ok=True)  # Creates an organism specific stats folder in the specified path location
-							batch_futures.append(batch_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos))
+							batch_futures.append(batch_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos,plot_mode))
 				# Add tqdm for inner progress
 				# Prepare the iterator
 				iterator = concurrent.futures.as_completed(batch_futures)
@@ -8483,7 +8598,7 @@ def ref_independent_organism_analysis(exp_table,org_folder,rand_genes,dpi_no,eac
 						raise
 
 #set of functions to parallelize the general gene duplications analysis steps for each organism in the regular expression analysis mode
-def organism_analysis(exp_table,org_folder,rand_genes,dpi_no,each,chunk_size,folder_type,pseudo_genes, r_threshold, org_name, logger, ref_name,max_inner_workers):
+def organism_analysis(exp_table,org_folder,rand_genes,dpi_no,each,chunk_size,folder_type,pseudo_genes, r_threshold, org_name, logger, ref_name,plot_mode,max_inner_workers):
 
 	org_duplicates_folder = os.path.join(org_folder,folder_type+"_duplicates")  # Creating the path for the folder for storing the data of tandems of particular organism
 	os.makedirs(org_duplicates_folder,exist_ok=True)  # Creates an organism specific tandem duplicates analysis folder in the specified path location
@@ -8524,7 +8639,7 @@ def organism_analysis(exp_table,org_folder,rand_genes,dpi_no,each,chunk_size,fol
 					stats_org = os.path.join(stats,f"{dups[0]}_group{stats_counter}_stats")
 					stats_counter+=1
 				os.makedirs(stats_org,exist_ok=True)  # Creates an organism specific stats folder in the specified path location
-				futures.append(duplicates_list_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos))
+				futures.append(duplicates_list_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos,plot_mode))
 			# Add tqdm for inner progress
 			# Prepare the iterator
 			iterator = concurrent.futures.as_completed(futures)
@@ -8560,7 +8675,7 @@ def organism_analysis(exp_table,org_folder,rand_genes,dpi_no,each,chunk_size,fol
 						stats_org = os.path.join(stats, f"{dups[0]}_group{stats_counter}_stats")
 						stats_counter+=1
 					os.makedirs(stats_org, exist_ok=True)  # Creates an organism specific stats folder in the specified path location
-					batch_futures.append(batch_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos))
+					batch_futures.append(batch_executor.submit(specific_sublist_analysis,dups,pseudo_genes,exp_table,plots_org,stats_org,dpi_no,r_threshold,specific_pseudos,plot_mode))
 				# Add tqdm for inner progress
 				# Prepare the iterator
 				iterator = concurrent.futures.as_completed(batch_futures)
@@ -8576,7 +8691,7 @@ def organism_analysis(exp_table,org_folder,rand_genes,dpi_no,each,chunk_size,fol
 						raise
 
 #master function to parallelize gene expression plotting and statistical analysis
-def two_step_parallelization_master(duplicates_analysis,validated_tpm_input_file,analyses,rand_genes,dpi_no,folder_type,rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,ref_free_folder,singleton_files,ref_name):
+def two_step_parallelization_master(duplicates_analysis,validated_tpm_input_file,analyses,rand_genes,dpi_no,folder_type,rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,ref_free_folder,singleton_files,ref_name,plot_mode):
 	total_cores = cores
 	logger.info(f"Detected {total_cores} CPU cores.")
 	num_organisms = len(validated_tpm_input_file)
@@ -8622,9 +8737,9 @@ def two_step_parallelization_master(duplicates_analysis,validated_tpm_input_file
 					final_org_singleton_name = str(orgname_singleton).strip().split('_singletons')[0]
 					if final_org_singleton_name==org_name:
 						singleton=every_single
-				org_futures.append(org_executor.submit(ref_independent_organism_analysis, exp_table,org_folder,rand_genes,dpi_no,each,chunk_size,folder_type,pseudo_genes, r_threshold, org_name, specific_dup_list, ref_free_folder,str(final_orgname[0]),singleton,logger,max_inner_workers=inner_cores))
+				org_futures.append(org_executor.submit(ref_independent_organism_analysis, exp_table,org_folder,rand_genes,dpi_no,each,chunk_size,folder_type,pseudo_genes, r_threshold, org_name, specific_dup_list, ref_free_folder,str(final_orgname[0]),singleton,logger,plot_mode,max_inner_workers=inner_cores))
 			else:
-				org_futures.append(org_executor.submit(organism_analysis, exp_table, org_folder, rand_genes, dpi_no, each,chunk_size, folder_type, pseudo_genes, r_threshold, org_name,logger,ref_name,max_inner_workers=inner_cores))
+				org_futures.append(org_executor.submit(organism_analysis, exp_table, org_folder, rand_genes, dpi_no, each,chunk_size, folder_type, pseudo_genes, r_threshold, org_name,logger,ref_name,plot_mode,max_inner_workers=inner_cores))
 		# Prepare the iterator
 		iterator = concurrent.futures.as_completed(org_futures)
 		if tqdm_available:
@@ -9005,6 +9120,11 @@ def main( arguments ):
 			exp_input_file = [exp_folder]
 	else:
 		exp_input_file = []
+
+	if '--exp_plot_mode' in arguments:  # user defined option to get gene expression plot in matrix or compact mode
+		plot_mode = (arguments[arguments.index('--exp_plot_mode') + 1])
+	else:
+		plot_mode = 'matrix'
 
 	if '--avg_exp_cut' in arguments:
 		avg_exp_cutoff = arguments[arguments.index('--avg_exp_cut')+1]#float value from the user to cutoff the average expression value across samples for classifying a gene as pseudogene
@@ -10173,7 +10293,7 @@ def main( arguments ):
 				parallelize_rthresh_pseudogenes(master_folder, validated_tpm_input_file, rand_genes, dpi_no, cores,logger,avg_exp_cutoff,rthreshold_pseudogenes_dic_dir)
 				rthreshold_pseudogenes_dic_dir_path = Path(rthreshold_pseudogenes_dic_dir)
 				rthreshold_pseudogenes_file_list = list(rthreshold_pseudogenes_dic_dir_path.iterdir())
-				specific_two_step_parallelization_master(validated_tpm_input_file, master_folder, desired_genes_output_file,dpi_no, rand_genes,rthreshold_pseudogenes_file_list,logger,cores)
+				specific_two_step_parallelization_master(validated_tpm_input_file, master_folder, desired_genes_output_file,dpi_no, rand_genes,rthreshold_pseudogenes_file_list,logger,cores,plot_mode)
 	#global definition of specific_dup_list for specific gene expression analysis in the absence of a reference organism
 	specific_dup_list = []
 	# if the user has specified a single or list of desired genes
@@ -10253,20 +10373,20 @@ def main( arguments ):
 				for file in files:
 					tandems_analysis.append(os.path.join(root, file))
 			duplicates_analysis = tandems_analysis
-			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Tandem',rthreshold_pseudogenes_file_list, cores, logger,specific_dup_list,ref_free_master_folder,singleton_files,ref_name)
+			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Tandem',rthreshold_pseudogenes_file_list, cores, logger,specific_dup_list,ref_free_master_folder,singleton_files,ref_name,plot_mode)
 			proximals_analysis = []
 			for root, dirs, files in os.walk(proximals_dir):
 				for file in files:
 					proximals_analysis.append(os.path.join(root, file))
 			duplicates_analysis = proximals_analysis
-			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Proximal',rthreshold_pseudogenes_file_list, cores, logger,specific_dup_list,ref_free_master_folder,singleton_files,ref_name)
+			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Proximal',rthreshold_pseudogenes_file_list, cores, logger,specific_dup_list,ref_free_master_folder,singleton_files,ref_name,plot_mode)
 			if classify == 'strict':
 				mixed_analysis = []
 				for root, dirs, files in os.walk(mixed_dir):
 					for file in files:
 						mixed_analysis.append(os.path.join(root, file))
 				duplicates_analysis = mixed_analysis
-				two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no,'Mixed', rthreshold_pseudogenes_file_list, cores, logger,specific_dup_list,ref_free_master_folder,singleton_files,ref_name)
+				two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no,'Mixed', rthreshold_pseudogenes_file_list, cores, logger,specific_dup_list,ref_free_master_folder,singleton_files,ref_name,plot_mode)
 			elif classify == 'overlap':
 				pass
 			dispersed_analysis = []
@@ -10274,7 +10394,7 @@ def main( arguments ):
 				for file in files:
 					dispersed_analysis.append(os.path.join(root, file))
 			duplicates_analysis = dispersed_analysis
-			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no,'Dispersed', rthreshold_pseudogenes_file_list, cores, logger,specific_dup_list,ref_free_master_folder,singleton_files,ref_name)
+			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no,'Dispersed', rthreshold_pseudogenes_file_list, cores, logger,specific_dup_list,ref_free_master_folder,singleton_files,ref_name,plot_mode)
 
 	if evo_analysis == 'yes':
 		if org_type == 'eukaryote':
@@ -10321,20 +10441,20 @@ def main( arguments ):
 				for file in files:
 					tandems_analysis.append(os.path.join(root, file))
 			duplicates_analysis = tandems_analysis
-			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Tandem',rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,rthreshold_pseudogenes_dic_dir,singleton_files,ref_name)
+			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Tandem',rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,rthreshold_pseudogenes_dic_dir,singleton_files,ref_name,plot_mode)
 			proximals_analysis = []
 			for root, dirs, files in os.walk(proximals_dir):
 				for file in files:
 					proximals_analysis.append(os.path.join(root, file))
 			duplicates_analysis = proximals_analysis
-			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Proximal',rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,rthreshold_pseudogenes_dic_dir,singleton_files,ref_name)
+			two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Proximal',rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,rthreshold_pseudogenes_dic_dir,singleton_files,ref_name,plot_mode)
 			if classify == 'strict':
 				mixed_analysis = []
 				for root, dirs, files in os.walk(mixed_dir):
 					for file in files:
 						mixed_analysis.append(os.path.join(root, file))
 				duplicates_analysis = mixed_analysis
-				two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no,'Mixed', rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,rthreshold_pseudogenes_dic_dir,singleton_files,ref_name)
+				two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no,'Mixed', rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,rthreshold_pseudogenes_dic_dir,singleton_files,ref_name,plot_mode)
 			elif classify == 'overlap':
 				pass
 			if dispersed_analysis_choice == 'no':
@@ -10345,7 +10465,7 @@ def main( arguments ):
 					for file in files:
 						dispersed_analysis.append(os.path.join(root, file))
 				duplicates_analysis = dispersed_analysis
-				two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Dispersed',rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,rthreshold_pseudogenes_dic_dir,singleton_files,ref_name)
+				two_step_parallelization_master(duplicates_analysis, validated_tpm_input_file, analyses, rand_genes, dpi_no, 'Dispersed',rthreshold_pseudogenes_file_list,cores,logger,specific_dup_list,rthreshold_pseudogenes_dic_dir,singleton_files,ref_name,plot_mode)
 
 	t_end = time.perf_counter()
 	logger.info(f"Time taken for the Dupylicate analysis: {t_end - t_start} seconds" + '\n')
