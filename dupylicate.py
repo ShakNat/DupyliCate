@@ -8871,7 +8871,7 @@ def main( arguments ):
 
 	#Option for user to specify the occupancy for alignment cleaning of the MAFFT file
 	if '--occupancy' in arguments:
-		occupancy = arguments[arguments.index('--occupancy')+1]
+		occupancy = float(arguments[arguments.index('--occupancy')+1])
 	else:
 		occupancy = 0.1
 
