@@ -1,4 +1,4 @@
-### v1.2 ###
+### v1.2.1.0 ###
 ### Shakunthala Natarajan ###
 ### Boas Pucker ###
 
@@ -1941,7 +1941,7 @@ def load_transcript_information_from_gff3( gff3_input_file,process_pseudos,child
 		if process_pseudos == 'no':
 			if has_mrna:  # checking for pseudogenes when mrna feature is present
 				gff_pseudos_genes = set()
-				with open(gff3_input_file, "r") as f:
+				with gzip.open(gff3_input_file, "rt") as f:
 					gff_lines = f.readlines()
 					# collecting pseudogenes to skip cds of pseudogenes
 					for line in gff_lines:
@@ -1975,7 +1975,7 @@ def load_transcript_information_from_gff3( gff3_input_file,process_pseudos,child
 											gff_pseudos.add(mrna_id)
 			elif has_transcript:  # checking for pseudogenes when transcript feature is present
 				gff_pseudos_genes = set()
-				with open(gff3_input_file, "r") as f:
+				with gzip.open(gff3_input_file, "rt") as f:
 					gff_lines = f.readlines()
 					# collecting pseudogenes to skip cds of pseudogenes
 					for line in gff_lines:
@@ -2010,7 +2010,7 @@ def load_transcript_information_from_gff3( gff3_input_file,process_pseudos,child
 										if mrna_id:
 											gff_pseudos.add(mrna_id)
 			else:  # checking for pseudogenes when no mrna, transcript feature is present and only cds feature is present
-				with open(gff3_input_file, "r") as f:
+				with gzip.open(gff3_input_file, "rt") as f:
 					gff_lines = f.readlines()
 					# collecting pseudogenes to skip cds of pseudogenes
 					for line in gff_lines:
