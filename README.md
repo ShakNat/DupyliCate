@@ -234,6 +234,8 @@ OPTIONAL:
 
 	--exp									STR			Full path to the folder with expression counts files
 
+	--exp_plot_mode							STR			Plot visualization options <compact | matrix> [Default is matrix]
+
 	--avg_exp_cut							FLOAT		Value cutoff for average expression value across samples [Default is 1]
 
 	--genes									INT			Value referring to the number of genes to be taken for random pairing [DEFAULT is 10000] 
