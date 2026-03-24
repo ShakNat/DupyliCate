@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19202192.svg)](https://doi.org/10.5281/zenodo.19202192)
+
 <img width="100" height="100" alt="draft_dupylicate_logo" src="https://github.com/user-attachments/assets/b46fb8c0-c6b7-440f-9323-5a8ad76c79c0" />
 
 
