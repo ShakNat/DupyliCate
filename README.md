@@ -673,7 +673,7 @@ The ortholog confidence is denoted in the last column. In case of low confidence
 
 ## When using DupyliCate in your research please cite
 
-Natarajan, S. & Pucker, B. DupyliCate: mining, classifying, and characterizing gene duplications. 2025.10.10.681656 Preprint at https://doi.org/10.1101/2025.10.10.681656 (2025).
+Natarajan, S., Pucker, B. DupyliCate: mining, classifying, and characterizing gene duplications. Sci Rep 16, 16557 (2026). https://doi.org/10.1038/s41598-026-55350-x
 
 ### Logo credits: The logo for DupyliCate was designed by Marie Hagedorn.
 
